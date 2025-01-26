@@ -1,0 +1,27 @@
+{
+	"name": "satoxbox docker",
+	"build": {
+		"dockerfile": "../Dockerfile"
+	},
+	"mounts": [
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/satobox/.ssh,type=bind,consistency=cached"
+	],
+	// Add the IDs of extensions you want installed when the container is created.
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+					  "path": "/bin/bash",
+					  "args": ["-l"]
+					}
+				},
+				"terminal.integrated.defaultProfile.linux": "bash"
+			},
+			"extensions": [
+				"ms-vscode.cpptools",
+				"eamodio.gitlens"
+			]
+		}
+	}
+}

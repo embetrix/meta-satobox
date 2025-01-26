@@ -1,0 +1,38 @@
+header:
+  version: 11
+machine: "qemux86-64"
+distro: satobox
+target:
+  - satobox-base-image
+repos:
+  # It's current revision will be used to perform the build.
+  meta-satobox:
+  poky:
+    url: "https://git.yoctoproject.org/git/poky"
+    branch: scarthgap
+    path: "layers"
+    layers:
+      meta:
+      meta-poky:
+      meta-yocto-bsp:
+  meta-openembedded:
+    url: "https://github.com/openembedded/meta-openembedded.git"
+    branch: scarthgap
+    path: "layers/meta-openembedded"
+    layers:
+      meta-oe:
+      meta-python:
+      meta-networking:
+      meta-perl:
+      meta-python:
+      meta-multimedia:
+      meta-filesystems:
+      meta-webserver:
+  meta-raspberrypi:
+    url: "https://git.yoctoproject.org/git/meta-raspberrypi.git"
+    branch: scarthgap
+    path: "layers/meta-raspberrypi"
+local_conf_header:
+  standard: |
+    CONF_VERSION = "2"
+

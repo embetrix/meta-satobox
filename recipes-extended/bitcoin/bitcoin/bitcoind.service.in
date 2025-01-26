@@ -1,0 +1,14 @@
+[Unit]
+Description=Bitcoin core daemon service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
