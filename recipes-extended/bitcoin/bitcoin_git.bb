@@ -3,7 +3,7 @@ HOMEPAGE = "https://bitcoincore.org"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=1bcc4deb6e65214278a39df8e5d29902"
 
-SRCREV = "2d07384243c9552aa8e95c80d7a279e2d224a753"
+SRCREV = "b432e367427f1f9fe0f0a5800e31e496f00cd38d"
 SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=master;protocol=https \
            file://bitcoind.service.in \
            file://bitcoin.conf \

@@ -18,4 +18,4 @@ do_install() {
 	install -m 0644 ${WORKDIR}/resize-part.service ${D}${systemd_unitdir}/system/
 }
 
-RDEPENDS:${PN} += "util-linux-blkid e2fsprogs-mke2fs e2fsprogs-resize2fs gptfdisk"
+RDEPENDS:${PN} += "util-linux-blkid e2fsprogs-mke2fs e2fsprogs-resize2fs parted gptfdisk"
