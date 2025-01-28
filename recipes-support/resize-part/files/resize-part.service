@@ -1,7 +1,6 @@
 [Unit]
 Description=resize partition service
-Before=local-fs.target
-DefaultDependencies=no
+Before=bitcoind.service
 
 [Service]
 Type=notify
