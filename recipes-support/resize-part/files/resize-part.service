@@ -1,0 +1,12 @@
+[Unit]
+Description=resize partition service
+Before=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=/usr/bin/resize-part
+
+[Install]
+WantedBy=basic.target
