@@ -6,7 +6,9 @@ Wants=network-online.target
 [Service]
 Type=notify
 NotifyAccess=all
-ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf
+ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
+                            -startupnotify='systemd-notify --ready' \
+                            -shutdownnotify='systemd-notify --stopping'
 Restart=on-failure
 RestartSec=5
 
