@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         gitParameter branchFilter: 'origin/(.*)', defaultValue: 'scarthgap', selectedValue: 'DEFAULT', name: 'BRANCH', type: 'PT_BRANCH', description: 'branch to build'
-        choice choices: ['qemux86-64', 'raspberrypi4-64'], description: 'select machine', name: 'MACHINE'
+        choice choices: ['qemux86-64', 'raspberrypi5', 'raspberrypi4-64'], description: 'select machine', name: 'MACHINE'
         choice choices: ['satobox-base-image'], description: 'select image', name: 'IMAGE'
         choice choices: ['no', 'yes'], description: 'clean workspace', name: 'CLEAN'
         choice choices: ['no', 'yes'], description: 'build sdk', name: 'SDK'
