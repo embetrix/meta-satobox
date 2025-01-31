@@ -23,6 +23,8 @@ IMAGE_INSTALL += "\
 IMAGE_INSTALL += "\
     resize-part \
     hostname-setup \
+    nodejs \
+    nodejs-npm \
     bitcoin \
     "
 
