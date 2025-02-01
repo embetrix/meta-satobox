@@ -1,9 +1,9 @@
 # description: Create a disk image
 part /             --ondisk mmcblk0  --label boot       --fixed-size 100M   --fstype=vfat  --source bootimg-partition  --active --align 4096
-part /             --ondisk mmcblk0  --label primary    --fixed-size 500M   --fstype=ext4   --source rootfs
-part /             --ondisk mmcblk0  --label secondary  --fixed-size 500M   --fstype=ext4   --source rootfs
-part /var/data     --ondisk mmcblk0  --label data       --fixed-size 500M   --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
-part /var/wallet   --ondisk mmcblk0  --label wallet     --fixed-size 100M   --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
-part /var/backups  --ondisk mmcblk0  --label backups    --fixed-size 100M   --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
+part /             --ondisk mmcblk0  --label primary    --fixed-size 1024M  --fstype=ext4   --source rootfs
+part /             --ondisk mmcblk0  --label secondary  --fixed-size 1024M  --fstype=ext4   --source rootfs
+part /var/data     --ondisk mmcblk0  --label data       --fixed-size 1024M  --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
+part /var/wallet   --ondisk mmcblk0  --label wallet     --fixed-size 1024M  --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
+part /var/backups  --ondisk mmcblk0  --label backups    --fixed-size 1024M  --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
 part /var/bitcoin  --ondisk mmcblk0  --label bitcoin    --fixed-size 2048M  --fstype=ext4   --fsoptions="noexec,nodev,nosuid"
 bootloader --ptable gpt
