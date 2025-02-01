@@ -1,0 +1,4 @@
+ControlPort 9051
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+DataDirectoryGroupReadable 1
