@@ -41,4 +41,6 @@ do_install:append() {
 
 FILES:${PN} += "${sysconfdir}/bitcoin"
 
+RDEPENDS:${PN} += "tor"
+
 BBCLASSEXTEND = "native nativesdk"

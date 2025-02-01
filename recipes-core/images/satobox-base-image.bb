@@ -25,7 +25,6 @@ IMAGE_INSTALL += "\
     hostname-setup \
     nodejs \
     nodejs-npm \
-    tor \
     openvpn \
     wireguard-tools \
     bitcoin \
