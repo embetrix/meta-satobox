@@ -1,0 +1,13 @@
+[Unit]
+Description = Anonymizing overlay network for TCP
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=@bindir@/tor -f /etc/tor/torrc
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy = multi-user.target
