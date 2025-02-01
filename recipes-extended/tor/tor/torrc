@@ -4,3 +4,4 @@ CookieAuthFileGroupReadable 1
 DataDirectoryGroupReadable 1
 ControlSocket /var/run/tor/control_socket
 CookieAuthFile /var/run/tor/control_auth_cookie
+DataDirectory /var/run/tor
