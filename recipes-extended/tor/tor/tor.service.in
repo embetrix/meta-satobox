@@ -1,5 +1,5 @@
 [Unit]
-Description = Anonymizing overlay network for TCP
+Description=Anonymizing overlay network for TCP
 After=network-online.target
 Wants=network-online.target
 
