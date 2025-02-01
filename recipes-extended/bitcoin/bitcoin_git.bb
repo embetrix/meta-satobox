@@ -7,6 +7,7 @@ SRCREV = "b432e367427f1f9fe0f0a5800e31e496f00cd38d"
 SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=master;protocol=https \
            file://bitcoind.service.in \
            file://bitcoin.conf \
+           file://bitcoin-tmp.conf \
            "
 
 S = "${WORKDIR}/git"
@@ -31,6 +32,8 @@ do_install:append() {
 
     install -d ${D}${sysconfdir}/bitcoin
     install -m 0644 ${WORKDIR}/bitcoin.conf ${D}${sysconfdir}/bitcoin/bitcoin.conf
+    install -d ${D}${sysconfdir}/tmpfiles.d
+    install -m 644 ${WORKDIR}/bitcoin-tmp.conf ${D}${sysconfdir}/tmpfiles.d/bitcoin.conf
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${systemd_system_unitdir}
@@ -39,7 +42,9 @@ do_install:append() {
     fi
 }
 
-FILES:${PN} += "${sysconfdir}/bitcoin"
+FILES:${PN} += "${sysconfdir}/bitcoin \
+                ${sysconfdir}/tmpfiles.d \
+                "
 
 RDEPENDS:${PN} += "tor"
 
