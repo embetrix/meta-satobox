@@ -1,0 +1,42 @@
+From 8ee9970b19b539ff41935ad90ff7125d7e0dde0b Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Wed, 5 Feb 2025 15:14:08 +0100
+Subject: [PATCH] bitcoind: disable noisy UpdateTipLog logs
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/validation.cpp | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/validation.cpp b/src/validation.cpp
+index 64588e802d..bab3c699be 100644
+--- a/src/validation.cpp
++++ b/src/validation.cpp
+@@ -2995,15 +2995,15 @@ static void UpdateTipLog(
+ {
+ 
+     AssertLockHeld(::cs_main);
+-    LogPrintf("%s%s: new best=%s height=%d version=0x%08x log2_work=%f tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo)%s\n",
+-        prefix, func_name,
+-        tip->GetBlockHash().ToString(), tip->nHeight, tip->nVersion,
+-        log(tip->nChainWork.getdouble()) / log(2.0), tip->m_chain_tx_count,
+-        FormatISO8601DateTime(tip->GetBlockTime()),
+-        chainman.GuessVerificationProgress(tip),
+-        coins_tip.DynamicMemoryUsage() * (1.0 / (1 << 20)),
+-        coins_tip.GetCacheSize(),
+-        !warning_messages.empty() ? strprintf(" warning='%s'", warning_messages) : "");
++    // LogPrintf("%s%s: new best=%s height=%d version=0x%08x log2_work=%f tx=%lu date='%s' progress=%f cache=%.1fMiB(%utxo)%s\n",
++    //     prefix, func_name,
++    //     tip->GetBlockHash().ToString(), tip->nHeight, tip->nVersion,
++    //     log(tip->nChainWork.getdouble()) / log(2.0), tip->m_chain_tx_count,
++    //     FormatISO8601DateTime(tip->GetBlockTime()),
++    //     chainman.GuessVerificationProgress(tip),
++    //     coins_tip.DynamicMemoryUsage() * (1.0 / (1 << 20)),
++    //     coins_tip.GetCacheSize(),
++    //     !warning_messages.empty() ? strprintf(" warning='%s'", warning_messages) : "");
+ }
+ 
+ void Chainstate::UpdateTip(const CBlockIndex* pindexNew)
+-- 
+2.43.0
+
