@@ -1,0 +1,6 @@
+[Match]
+Kind=!*
+Type=ether
+
+[Network]
+DHCP=yes
