@@ -1,13 +1,30 @@
 #!/bin/sh
 # Copyright 2025  Embetrix Embedded Systems Solutions, ayoub.zaki@embetrix.com
 #
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-LABEL="bitcoin"
-PART=$(blkid --label $LABEL)
+# Resizes the last GPT partition to the max available size and formats it with ext4 if below THRESHOLD.
+THRESHOLD=8388608   # 4GB in sectors (assuming 512-byte sectors)
+
+RDEV=$(rdev | awk '{print $1}')
+DEVICE=${RDEV%p*}
+PART="/dev/$(lsblk -rno NAME $DEVICE | grep -E '[0-9]+$' | tail -n 1)"
 PART_NBR=${PART##*p}
-DEVICE="/dev/$(lsblk -no PKNAME $PART)"
+LABEL=$(blkid -s PARTLABEL -o value $PART)
 SECTORS=$(blockdev --getsz $PART)
-MIN_SEC=8388608   # 4GB in sectors
+MIN_SEC=$THRESHOLD   # 4GB in sectors
 MESSAGE=""
 
 if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ]; then
