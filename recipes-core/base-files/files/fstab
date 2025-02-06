@@ -2,7 +2,7 @@ proc                 /proc                proc       defaults                   
 devpts               /dev/pts             devpts     mode=0620,gid=5,noexec,nosuid             0  0
 tmpfs                /run                 tmpfs      mode=0755,nodev,noexec,nosuid,strictatime 0  0
 tmpfs                /var/volatile        tmpfs      noexec,nodev,nosuid                       0  0
-LABEL=data           /var/data            ext4       noexec,nodev,nosuid                       0  0
-LABEL=wallet         /var/wallet          ext4       noexec,nodev,nosuid                       0  0
-LABEL=backups        /var/backups         ext4       noexec,nodev,nosuid                       0  0
-LABEL=bitcoin        /var/bitcoin         ext4       noexec,nodev,nosuid                       0  0
+LABEL=data           /var/data            auto       noexec,nodev,nosuid                       0  0
+LABEL=wallet         /var/wallet          auto       noexec,nodev,nosuid                       0  0
+LABEL=backups        /var/backups         auto       noexec,nodev,nosuid                       0  0
+LABEL=bitcoin        /var/bitcoin         auto       noexec,nodev,nosuid                       0  0
