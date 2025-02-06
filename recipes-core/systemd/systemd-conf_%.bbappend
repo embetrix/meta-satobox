@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI = "\
+SRC_URI += "\
 	file://20-ethernet.network \
 	file://80-wifi.network \
 	"
