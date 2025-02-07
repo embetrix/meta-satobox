@@ -8,7 +8,6 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=fd51c8540e62d9458acf2e5c6e8ce350"
 SRC_URI = "git://gitlab.torproject.org/tpo/core/${BPN};branch=release-0.4.8;protocol=https \
            file://tor.service.in \
            file://torrc \
-           file://tor-tmp.conf \
            "
 SRCREV = "e153e72c01315f86c1df36cecfa1790779a3adb4"
 S = "${WORKDIR}/git"
@@ -31,8 +30,6 @@ do_install:append() {
 
     install -d ${D}${sysconfdir}/tor
     install -m 0644 ${WORKDIR}/torrc ${D}${sysconfdir}/tor/torrc
-    install -d ${D}${sysconfdir}/tmpfiles.d
-    install -m 644 ${WORKDIR}/tor-tmp.conf ${D}${sysconfdir}/tmpfiles.d/tor.conf
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${systemd_system_unitdir}
@@ -43,7 +40,6 @@ do_install:append() {
 
 FILES:${PN} += "${bindir} \
                 ${sysconfdir}/tor \
-                ${sysconfdir}/tmpfiles.d \
                 ${datadir}/tor \
                 "
 
