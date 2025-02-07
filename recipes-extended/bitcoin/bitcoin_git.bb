@@ -25,6 +25,12 @@ PACKAGECONFIG[man]    = "-DINSTALL_MAN=ON, -DINSTALL_MAN=OFF"
 PACKAGECONFIG[wallet] = "-DENABLE_WALLET=ON, -DENABLE_WALLET=OFF, sqlite3"
 PACKAGECONFIG[zmq]    = "-DWITH_ZMQ=ON, -DWITH_ZMQ=OFF, zeromq"
 
+inherit useradd
+
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN}  = "-g 1777 bitcoin;"
+USERADD_PARAM:${PN}   = "-g 1777 -u 1777  --system --no-create-home -s /bin/false bitcoin;"
+
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "bitcoind.service"
 SYSTEMD_PACKAGES = "${PN}"

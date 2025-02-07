@@ -6,9 +6,14 @@ Wants=network-online.target
 [Service]
 Type=notify
 NotifyAccess=all
+DynamicUser=yes
+SupplementaryGroups=bitcoin
+ReadWritePaths=/var/wallet /var/bitcoin
 ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
                             -startupnotify='systemd-notify --ready' \
                             -shutdownnotify='systemd-notify --stopping'
+RuntimeDirectory=bitcoin
+RuntimeDirectoryMode=0700
 Restart=on-failure
 RestartSec=5
 
