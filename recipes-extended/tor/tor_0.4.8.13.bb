@@ -1,6 +1,6 @@
-SUMMARY = "Tor core"
-DESCRIPTION = "Tor protects your privacy on the internet by hiding the connection between \
-your Internet address and the services you use if configured properly."
+SUMMARY = "Tor Onion Router core"
+DESCRIPTION = "Tor Onion Router core to protect your privacy on the internet by hiding the connection between \
+your Internet address and the services"
 HOMEPAGE = "https://www.torproject.org"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=fd51c8540e62d9458acf2e5c6e8ce350"
