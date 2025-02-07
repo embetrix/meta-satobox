@@ -24,10 +24,10 @@ PART="/dev/$(lsblk -rno NAME $DEVICE | grep -E '[0-9]+$' | tail -n 1)"
 PART_NBR=${PART##*p}
 LABEL=$(blkid -s PARTLABEL -o value $PART)
 SECTORS=$(blockdev --getsz $PART)
-MIN_SEC=$THRESHOLD   # 4GB in sectors
+MIN_SEC=$THRESHOLD
 MESSAGE=""
 
-if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ]; then
+if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ] || [ -z "$LABEL" ]; then
     echo "No device found with label $LABEL"
     MESSAGE="No device found with label $LABEL!"
 else
