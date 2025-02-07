@@ -1,9 +1,9 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI += "file://wpa_supplicant@.service"
-SRC_URI += "file://wpa_supplicant-wlan0.conf"
-SRC_URI += "file://20-wlan-interface.rules"
-
+SRC_URI += "file://wpa_supplicant@.service   \
+            file://wpa_supplicant-wlan0.conf \
+            file://20-wlan-interface.rules   \
+            "
 
 SYSTEMD_AUTO_ENABLE = "disable"
 
