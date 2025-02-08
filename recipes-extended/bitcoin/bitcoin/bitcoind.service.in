@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=notify
 NotifyAccess=all
 DynamicUser=yes
-SupplementaryGroups=bitcoin
+SupplementaryGroups=bitcoin tor
 ReadWritePaths=/var/wallet /var/bitcoin
 ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
                             -startupnotify='systemd-notify --ready' \
