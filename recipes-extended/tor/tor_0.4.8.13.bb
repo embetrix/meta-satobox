@@ -23,6 +23,12 @@ PACKAGECONFIG[lzma]    = "--enable-lzma,--disable-lzma, xz"
 EXTRA_OECONF += " --disable-tool-name-check --disable-manpage \
                   --disable-asciidoc --disable-html-manual --disable-unittests"
 
+inherit useradd
+
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "--system tor"
+USERADD_PARAM:${PN}  = "--system  --no-create-home -g tor -s /bin/false tor"
+
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "tor.service"
 SYSTEMD_PACKAGES = "${PN}"
