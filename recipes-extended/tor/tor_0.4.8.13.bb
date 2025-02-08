@@ -20,7 +20,8 @@ PACKAGECONFIG[systemd] = "--enable-systemd,--disable-systemd, systemd"
 PACKAGECONFIG[zstd]    = "--enable-zstd,--disable-zstd, zstd"
 PACKAGECONFIG[lzma]    = "--enable-lzma,--disable-lzma, xz"
 
-EXTRA_OECONF += " --disable-tool-name-check --disable-manpage --disable-asciidoc --disable-html-manual --disable-unittests"
+EXTRA_OECONF += " --disable-tool-name-check --disable-manpage \
+                  --disable-asciidoc --disable-html-manual --disable-unittests"
 
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "tor.service"
