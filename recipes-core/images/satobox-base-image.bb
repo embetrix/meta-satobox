@@ -27,6 +27,7 @@ IMAGE_INSTALL += "\
     nodejs-npm \
     openvpn \
     wireguard-tools \
+    python3-hwi \
     bitcoin \
     "
 
