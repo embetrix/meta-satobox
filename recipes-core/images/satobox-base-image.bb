@@ -18,6 +18,7 @@ IMAGE_INSTALL += "\
     openssl-bin \
     iperf3 \
     iptables \
+    sqlite3 \
     "
 
 IMAGE_INSTALL += "\
