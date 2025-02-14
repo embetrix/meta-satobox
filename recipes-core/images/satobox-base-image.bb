@@ -30,6 +30,7 @@ IMAGE_INSTALL += "\
     wireguard-tools \
     python3-hwi \
     bitcoin \
+    electrs \
     "
 
 ROOT_PASSWORD   = "r00t"
