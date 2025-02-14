@@ -15,6 +15,8 @@ S = "${WORKDIR}/git"
 
 COMPATIBLE_HOST:libc-musl = "null"
 
+TOOLCHAIN = "clang"
+
 inherit pkgconfig cmake
 
 DEPENDS = "libevent boost"
