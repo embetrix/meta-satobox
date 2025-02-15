@@ -36,6 +36,13 @@ repos:
     url: "https://github.com/kraj/meta-clang.git"
     branch: scarthgap
     path: "layers/meta-clang"
+  meta-security:
+    url: https://git.yoctoproject.org/meta-security
+    branch: scarthgap
+    path: "layers/meta-security"
+    layers:
+      .:
+      meta-integrity:
 local_conf_header:
   standard: |
     CONF_VERSION = "2"
