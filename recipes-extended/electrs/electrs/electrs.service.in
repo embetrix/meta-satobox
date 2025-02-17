@@ -1,0 +1,15 @@
+[Unit]
+Description=Electrum Server
+Requires=bitcoind.service
+After=bitcoind.service
+
+[Service]
+#DynamicUser=yes
+#SupplementaryGroups=bitcoind
+#ReadWritePaths=/var/bitcoin/electrs
+ExecStart=@bindir@/electrs  --conf /etc/electrs/config.toml
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
