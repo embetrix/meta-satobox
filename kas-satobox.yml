@@ -43,6 +43,10 @@ repos:
     layers:
       .:
       meta-integrity:
+  meta-tor:
+    url: "https://github.com/embetrix/meta-tor.git"
+    branch: scarthgap
+    path: "layers/meta-tor"
 local_conf_header:
   standard: |
     CONF_VERSION = "2"
