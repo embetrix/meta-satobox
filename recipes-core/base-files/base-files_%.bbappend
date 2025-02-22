@@ -2,10 +2,10 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://aliases.sh"
 
-#add mount points for data/bitcoin/wallet/backups partitions
+#add mount points for data/bitcoin/wallets/backups partitions
 dirs755 += " ${localstatedir}/data     \
              ${localstatedir}/bitcoin  \
-             ${localstatedir}/wallet   \
+             ${localstatedir}/wallets   \
              ${localstatedir}/backups  \
             "
 

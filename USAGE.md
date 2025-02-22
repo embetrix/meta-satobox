@@ -25,7 +25,7 @@ bitcoin-cli -rpcwallet="Wallet-01" getwalletinfo
 ### Backing Up the Wallet
 
 ```
-bitcoin-cli -rpcwallet="Wallet-01" backupwallet /var/run/bitcoin/Wallet-01_Backup.dat
+bitcoin-cli -rpcwallet="Wallet-01" backupwallet /var/wallets/Wallet-01_Backup.dat
 ```
 
 ### List Wallets

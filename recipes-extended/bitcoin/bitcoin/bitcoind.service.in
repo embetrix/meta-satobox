@@ -8,7 +8,7 @@ Type=notify
 NotifyAccess=all
 DynamicUser=yes
 SupplementaryGroups=bitcoin tor
-ReadWritePaths=/var/wallet /var/bitcoin
+ReadWritePaths=/var/wallets /var/bitcoin /var/backups
 ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
                             -startupnotify='systemd-notify --ready' \
                             -shutdownnotify='systemd-notify --stopping'
