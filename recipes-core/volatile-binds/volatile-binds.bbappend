@@ -6,5 +6,4 @@ VOLATILE_BINDS = "\
                 /var/data/etc/wpa_supplicant /etc/wpa_supplicant\n\
                 /var/data/etc/bitcoin /etc/bitcoin\n\
                 /var/data/etc/tor /etc/tor\n\
-                /var/data/var/tor /var/tor\n\
-                "
+                /var/data/var/tor /var/tor\n"
