@@ -55,6 +55,6 @@ FILES:${PN} += "${sysconfdir}/bitcoin \
                 ${sysconfdir}/tmpfiles.d \
                 "
 
-RDEPENDS:${PN} += "tor"
+RDEPENDS:${PN} += "tor python3-hwi"
 
 BBCLASSEXTEND = "native nativesdk"
