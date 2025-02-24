@@ -30,6 +30,7 @@ IMAGE_INSTALL += "\
     wireguard-tools \
     usbguard \
     python3-hwi \
+    python3-bitcoinlib \
     bitcoin \
     electrs \
     "
