@@ -3,14 +3,14 @@ HOMEPAGE = "https://bitcoincore.org"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=1bcc4deb6e65214278a39df8e5d29902"
 
-SRCREV = "e486597f9a57903600656fb5106858941885852f"
 SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=master;protocol=https \
            file://0001-bitcoind-disable-noisy-UpdateTipLog-logs.patch \
            file://bitcoind.service.in \
            file://bitcoin.conf \
            file://bitcoin-tmp.conf \
            "
-
+v29.0
+SRCREV = "f490f5562d4b20857ef8d042c050763795fd43da"
 S = "${WORKDIR}/git"
 
 COMPATIBLE_HOST:libc-musl = "null"
