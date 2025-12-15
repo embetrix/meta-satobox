@@ -3,29 +3,34 @@ HOMEPAGE = "https://bitcoincore.org"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://COPYING;md5=1bcc4deb6e65214278a39df8e5d29902"
 
-SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=29.x;protocol=https \
+SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=30.x;protocol=https \
            file://0001-bitcoind-disable-noisy-UpdateTipLog-logs.patch \
            file://bitcoind.service.in \
            file://bitcoin.conf \
            file://bitcoin-tmp.conf \
            "
-#v29.0
-SRCREV = "f490f5562d4b20857ef8d042c050763795fd43da"
+#v30.0
+SRCREV = "d0f6d9953a15d7c7111d46dcb76ab2bb18e5dee3"
 S = "${WORKDIR}/git"
-
-COMPATIBLE_HOST:libc-musl = "null"
 
 TOOLCHAIN = "clang"
 
 inherit pkgconfig cmake
 
-DEPENDS = "libevent boost"
+DEPENDS =  "libevent boost"
+DEPENDS += "doxygen-native"
+
+EXTRA_OECMAKE += "-DBUILD_BENCH=OFF \
+                  -DBUILD_TESTS=OFF \
+                  -DBUILD_GUI=OFF \
+                  -DENABLE_IPC=OFF"
 
 PACKAGECONFIG ?= "shared wallet zmq"
 PACKAGECONFIG[shared] = "-DBUILD_SHARED_LIBS=ON, -DBUILD_SHARED_LIBS=OFF"
 PACKAGECONFIG[man]    = "-DINSTALL_MAN=ON, -DINSTALL_MAN=OFF"
 PACKAGECONFIG[wallet] = "-DENABLE_WALLET=ON, -DENABLE_WALLET=OFF, sqlite3"
 PACKAGECONFIG[zmq]    = "-DWITH_ZMQ=ON, -DWITH_ZMQ=OFF, zeromq"
+
 
 inherit useradd
 
