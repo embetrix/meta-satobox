@@ -12,10 +12,11 @@ OPT_ROOT="ro,noatime"
 
 # 4GB in sectors (assuming 512-byte sectors)
 THRESHOLD=8388608
+TIMEOUT=20
 
 # Init
 INIT="/sbin/init"
-
+error_exit
 mount_pseudo_fs() {
 
 	mount -t devtmpfs none /dev
@@ -43,7 +44,22 @@ error_exit() {
 
 	echo "$1!"
 	sleep 5
+	sh
 	#reboot -f
+}
+
+wait_for_dev() {
+	i=0
+	while [ $i -lt $TIMEOUT ]; do
+		if [ -b $1  ] ; then
+				break;
+		fi
+		let i=i+1
+		sleep 0.1
+	done
+	if [ $i -eq $TIMEOUT ]; then
+		error_exit "Timeout waiting for $1"
+	fi
 }
 
 mount_pseudo_fs
@@ -57,6 +73,8 @@ echo "Root device: $ROOT_DEV"
 if [ "$ROOT_DEV" == "" ] || [ "$ROOT_DEV" == "/dev/nfs" ]; then
 	error_exit "cannot get root device"
 fi
+
+wait_for_dev $ROOT_DEV
 
 # Resizes the last GPT partition to the max available size and formats it with ext4 if below THRESHOLD.
 DEVICE=${ROOT_DEV%p*}
@@ -77,9 +95,7 @@ if [ $SECTORS -lt $MIN_SEC ]; then
 	mkfs.ext4 -F $PART -L $LABEL
 	echo "Resize completed successfully."
 	sync
-	#reboot -f
-else
-	echo "No need to resize partition."
+	reboot -f
 fi
 
 # Mount root filesystem
