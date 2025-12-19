@@ -9,6 +9,7 @@ SRC_URI = "file://resize-part.service \
 
 SYSTEMD_SERVICE:${PN} = "resize-part.service"
 SYSTEMD_PACKAGES = "${PN}"
+SYSTEMD_AUTO_ENABLE = "disable"
 
 do_install() {
 

@@ -2,7 +2,6 @@
 Description=Bitcoin core daemon service
 After=network-online.target
 Wants=network-online.target
-RequiresMountsFor=/var/bitcoin /var/wallets /var/backups
 
 [Service]
 Type=notify

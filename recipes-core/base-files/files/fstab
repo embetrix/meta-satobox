@@ -1,8 +1,8 @@
-proc                 /proc                proc       defaults                                  0  0
-devpts               /dev/pts             devpts     mode=0620,gid=5,noexec,nosuid             0  0
-tmpfs                /run                 tmpfs      mode=0755,nodev,noexec,nosuid,strictatime 0  0
-tmpfs                /var/volatile        tmpfs      noexec,nodev,nosuid                       0  0
-LABEL=data           /var/data            auto       noexec,nodev,nosuid,noatime,x-systemd.before=systemd-tmpfiles-setup.service 0 0
-LABEL=wallets        /var/wallets         auto       noexec,nodev,nosuid,noatime,x-systemd.before=systemd-tmpfiles-setup.service 0 0
-LABEL=backups        /var/backups         auto       noexec,nodev,nosuid,noatime,x-systemd.before=systemd-tmpfiles-setup.service 0 0
-LABEL=bitcoin        /var/bitcoin         auto       noexec,nodev,nosuid,noatime,x-systemd.before=systemd-tmpfiles-setup.service 0 0
+proc                 /proc                proc       defaults                                  0 0
+devpts               /dev/pts             devpts     mode=0620,gid=5,noexec,nosuid             0 0
+tmpfs                /run                 tmpfs      mode=0755,nodev,noexec,nosuid,strictatime 0 0
+tmpfs                /var/volatile        tmpfs      noexec,nodev,nosuid                       0 0
+LABEL=data           /var/data            auto       noexec,nodev,nosuid,noatime               0 0
+LABEL=wallets        /var/wallets         auto       noexec,nodev,nosuid,noatime               0 0
+LABEL=backups        /var/backups         auto       noexec,nodev,nosuid,noatime               0 0
+LABEL=bitcoin        /var/bitcoin         auto       noexec,nodev,nosuid,noatime               0 0
