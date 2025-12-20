@@ -3,7 +3,7 @@ DESCRIPTION = "Satobox Base Image"
 inherit core-image passwd
 
 EXTRA_IMAGE_FEATURES = "debug-tweaks"
-IMAGE_FEATURES += "package-management ssh-server-openssh"
+IMAGE_FEATURES += "package-management ssh-server-openssh read-only-rootfs"
 
 IMAGE_INSTALL += "\
     packagegroup-core-boot \
