@@ -36,6 +36,10 @@ ip6tables -A OUTPUT -p tcp --dport 22 -j ACCEPT
 # Allow outbound NTP (UDP port 123)
 ip6tables -A OUTPUT -p udp --dport 123 -j ACCEPT
 
+# Allow outbound DNS (UDP and TCP port 53)
+ip6tables -A OUTPUT -p udp --dport 53 -j ACCEPT
+ip6tables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
 # Allow DHCPv6 client traffic (if applicable):
 # Outbound: from client port 546 to server port 547
 ip6tables -A OUTPUT -p udp --sport 546 --dport 547 -j ACCEPT
