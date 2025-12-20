@@ -12,11 +12,11 @@ OPT_ROOT="ro,noatime"
 
 # 4GB in sectors (assuming 512-byte sectors)
 THRESHOLD=8388608
-TIMEOUT=20
+TIMEOUT=40
 
 # Init
 INIT="/sbin/init"
-error_exit
+
 mount_pseudo_fs() {
 
 	mount -t devtmpfs none /dev
@@ -64,9 +64,8 @@ wait_for_dev() {
 
 mount_pseudo_fs
 
-echo "Initramfs..."
+echo "Starting Initramfs..."
 parse_cmdline
-mkdir -p $ROOT_MNT
 
 # Check root device
 echo "Root device: $ROOT_DEV"
@@ -93,12 +92,14 @@ if [ $SECTORS -lt $MIN_SEC ]; then
 	sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
 	partprobe $DEVICE
 	mkfs.ext4 -F $PART -L $LABEL
-	echo "Resize completed successfully."
+	echo "Resize completed successfully, Rebooting system..."
 	sync
+	sleep 5
 	reboot -f
 fi
 
 # Mount root filesystem
+mkdir -p $ROOT_MNT
 mount -o $OPT_ROOT $ROOT_DEV $ROOT_MNT   || error_exit "cannot mount root filesystem"
 
 # Mount data volume
@@ -108,4 +109,5 @@ mount -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MN
 mount -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
 
 # Switch to real root
+echo "Switch to real root..."
 exec switch_root $ROOT_MNT $INIT || error_exit "cannot switch_root to real root"
