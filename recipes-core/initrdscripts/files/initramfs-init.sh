@@ -9,6 +9,7 @@ WALLETS_MNT="/var/wallets"
 BACKUPS_MNT="/var/backups"
 ROOT_DEV=""
 OPT_ROOT="ro,noatime"
+OPT_PART="noexec,nodev,nosuid,noatime"
 
 # 4GB in sectors (assuming 512-byte sectors)
 THRESHOLD=8388608
@@ -103,10 +104,10 @@ mkdir -p $ROOT_MNT
 mount -o $OPT_ROOT $ROOT_DEV $ROOT_MNT   || error_exit "cannot mount root filesystem"
 
 # Mount data volume
-mount -L data     $ROOT_MNT$DATA_MNT     || error_exit "cannot mount $DATA_MNT"
-mount -L bitcoin  $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT"
-mount -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
-mount -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
+mount -o $OPT_PART -L data     $ROOT_MNT$DATA_MNT     || error_exit "cannot mount $DATA_MNT"
+mount -o $OPT_PART -L bitcoin  $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT"
+mount -o $OPT_PART -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
+mount -o $OPT_PART -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
 
 # Switch to real root
 echo "Switch to real root..."
