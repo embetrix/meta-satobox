@@ -4,10 +4,12 @@ Requires=bitcoind.service
 After=bitcoind.service
 
 [Service]
-#DynamicUser=yes
-#SupplementaryGroups=bitcoind
-#ReadWritePaths=/var/bitcoin/electrs
+DynamicUser=yes
+SupplementaryGroups=bitcoin
+ReadWritePaths=/var/bitcoin
 ExecStart=@bindir@/electrs  --conf /etc/electrs/config.toml
+RuntimeDirectory=bitcoin
+RuntimeDirectoryMode=0700
 Restart=on-failure
 RestartSec=30
 
