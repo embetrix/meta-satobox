@@ -1,5 +1,3 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-
 VOLATILE_BINDS += "\
                 /var/data/lib/systemd/network /lib/systemd/network\n\
                 /var/data/home/root /home/root\n\
