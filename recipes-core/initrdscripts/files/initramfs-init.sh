@@ -91,7 +91,7 @@ fi
 if [ $SECTORS -lt $MIN_SEC ]; then
 	echo "Resizing partition $PART"
 	sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
-	partprobe $DEVICE
+	hdparm -z $DEVICE
 	mkfs.ext4 -F $PART -L $LABEL
 	echo "Resize completed successfully, Rebooting system..."
 	sync
