@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 export PATH=$PATH:/sbin:/usr/sbin
 
@@ -11,8 +11,6 @@ ROOT_DEV=""
 OPT_ROOT="ro,noatime"
 OPT_PART="noexec,nodev,nosuid,noatime"
 
-# 4GB in sectors (assuming 512-byte sectors)
-THRESHOLD=8388608
 TIMEOUT=40
 
 # Init
@@ -44,9 +42,8 @@ parse_cmdline() {
 error_exit() {
 
 	echo "$1!"
-	sleep 5
-	sh
-	#reboot -f
+	sleep 2
+	reboot -f
 }
 
 wait_for_dev() {
@@ -63,9 +60,9 @@ wait_for_dev() {
 	fi
 }
 
-mount_pseudo_fs
 
 echo "Starting Initramfs..."
+mount_pseudo_fs
 parse_cmdline
 
 # Check root device
@@ -76,27 +73,77 @@ fi
 
 wait_for_dev $ROOT_DEV
 
-# Resizes the last GPT partition to the max available size and formats it with ext4 if below THRESHOLD.
-DEVICE=${ROOT_DEV%p*}
-PART="/dev/$(lsblk -rno NAME $DEVICE | grep -E '[0-9]+$' | tail -n 1)"
-PART_NBR=${PART##*p}
-LABEL=$(blkid -s PARTLABEL -o value $PART)
-SECTORS=$(blockdev --getsz $PART)
-MIN_SEC=$THRESHOLD
-
-if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ] || [ -z "$LABEL" ]; then
-	error_exit "No device found with label $LABEL!"
+# Handle both mmcblkXpY and sdaY naming schemes
+if echo "$ROOT_DEV" | grep -q 'p[0-9]$'; then
+	# mmcblk or nvme device (has 'p' separator)
+	DEVICE=${ROOT_DEV%p*}
+else
+	# Regular disk device like sda, sdb (no 'p' separator)
+	DEVICE=${ROOT_DEV%[0-9]*}
 fi
 
-if [ $SECTORS -lt $MIN_SEC ]; then
-	echo "Resizing partition $PART"
+# Find the last partition number on the device
+PART_NBR=$(sgdisk -p $DEVICE | grep "^ *[0-9]" | awk '{print $1}' | tail -1)
+
+if [ -z "$PART_NBR" ]; then
+	error_exit "Could not determine last partition number on $DEVICE"
+fi
+
+# Reconstruct PART with correct separator
+case "$DEVICE" in
+	*mmcblk*|*nvme*)
+		PART="$DEVICE"p"$PART_NBR"
+		;;
+	*)
+		PART="$DEVICE""$PART_NBR"
+		;;
+esac
+
+echo "Found last partition: $PART (partition $PART_NBR on $DEVICE)"
+
+LABEL=$(blkid -s PARTLABEL -o value $PART)
+SECTORS=$(blockdev --getsz $PART)
+
+if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ]; then
+	error_exit "Failed to identify partition details!"
+fi
+
+# Check if partition can be extended to maximum
+echo "Checking if partition $PART can be extended..."
+DEVICE_SECTORS=$(blockdev --getsz $DEVICE)
+DEVICE_END=$((DEVICE_SECTORS - 1))
+
+# Get partition end sector from sgdisk partition table
+LAST_PART_END=$(sgdisk -p $DEVICE | grep "^ *$PART_NBR " | awk '{print int($3)}')
+
+if [ -n "$LAST_PART_END" ] && [ $LAST_PART_END -lt $DEVICE_END ]; then
+	echo "Partition sectors: $SECTORS"
+	echo "Last partition end: $LAST_PART_END"
+	echo "Device end: $DEVICE_END"
+	echo "Partition has free space available. Resizing partition $PART to maximum..."
 	sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
-	hdparm -z $DEVICE
-	mkfs.ext4 -F $PART -L $LABEL
-	echo "Resize completed successfully, Rebooting system..."
-	sync
-	sleep 5
-	reboot -f
+	partprobe $DEVICE
+
+	# Wait and force kernel to re-read partition table
+	sleep 1
+	blockdev --rereadpt $DEVICE 2>/dev/null || true
+	sleep 1
+
+	# Get new partition size after resize
+	NEW_SECTORS=$(blockdev --getsz $PART)
+	echo "Partition size after resize: $NEW_SECTORS sectors (was $SECTORS)"
+
+	# Only proceed with filesystem resize if partition actually grew
+	if [ $NEW_SECTORS -gt $SECTORS ]; then
+		echo "Resizing filesystem..."
+		resize2fs $PART
+		echo "Filesystem resize completed successfully."
+		sleep 2
+		echo "Rebooting system to apply changes..."
+		reboot -f
+	else
+		echo "Partition size did not change, no resize needed."
+	fi
 fi
 
 # Mount root filesystem
