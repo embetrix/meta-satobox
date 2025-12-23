@@ -50,4 +50,4 @@ repos:
 local_conf_header:
   standard: |
     CONF_VERSION = "2"
-
+    ROOT_PASSWORD   = "r00t"

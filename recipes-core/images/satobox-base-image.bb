@@ -34,4 +34,3 @@ IMAGE_INSTALL += "\
     electrs \
     "
 
-ROOT_PASSWORD   = "r00t"
