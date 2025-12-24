@@ -42,12 +42,19 @@ inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "bitcoind.service"
 SYSTEMD_PACKAGES = "${PN}"
 
+BITCOIND_RPC_USER   ?= "satobox"
+BITCOIND_RPC_PASSWD ?= "sat0b0x"
+
 do_install:append() {
 
     install -d ${D}${sysconfdir}/bitcoin
     install -m 0644 ${WORKDIR}/bitcoin.conf ${D}${sysconfdir}/bitcoin/bitcoin.conf
     install -d ${D}${sysconfdir}/tmpfiles.d
     install -m 644 ${WORKDIR}/bitcoin-tmp.conf ${D}${sysconfdir}/tmpfiles.d/bitcoin.conf
+
+    # Generate RPC auth hash using the script in Bitcoin source
+    RPC_AUTH_HASH=$(${S}/share/rpcauth/rpcauth.py ${BITCOIND_RPC_USER} ${BITCOIND_RPC_PASSWD} | grep "rpcauth=" | cut -d'=' -f2-)
+    sed -i "s|^rpcauth=.*|rpcauth=${RPC_AUTH_HASH}|" ${D}${sysconfdir}/bitcoin/bitcoin.conf
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${systemd_system_unitdir}

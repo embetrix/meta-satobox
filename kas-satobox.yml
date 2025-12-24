@@ -51,3 +51,5 @@ local_conf_header:
   standard: |
     CONF_VERSION = "2"
     ROOT_PASSWORD   = "r00t"
+    BITCOIND_RPC_USER   = "satobox"
+    BITCOIND_RPC_PASSWD = "sat0b0x"
