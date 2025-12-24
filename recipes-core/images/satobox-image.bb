@@ -1,4 +1,4 @@
-DESCRIPTION = "Satobox Base Image"
+DESCRIPTION = "Satobox Image"
 
 inherit core-image passwd
 
@@ -33,4 +33,3 @@ IMAGE_INSTALL += "\
     bitcoin \
     electrs \
     "
-

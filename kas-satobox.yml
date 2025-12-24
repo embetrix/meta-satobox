@@ -3,7 +3,7 @@ header:
 machine: "qemux86-64"
 distro: satobox
 target:
-  - satobox-base-image
+  - satobox-image
 repos:
   # It's current revision will be used to perform the build.
   meta-satobox:
