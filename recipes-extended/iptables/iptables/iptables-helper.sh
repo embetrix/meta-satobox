@@ -31,6 +31,9 @@ iptables -A INPUT -p icmp --icmp-type echo-request \
          -m limit --limit 1/second --limit-burst 5 \
          -j ACCEPT
 
+# Allow outbound ping (ICMP echo-request)
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+
 # --- Outbound Rules ---
 # Allow outbound SSH (TCP port 22)
 iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT

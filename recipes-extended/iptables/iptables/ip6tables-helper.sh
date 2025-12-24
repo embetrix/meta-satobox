@@ -25,11 +25,14 @@ ip6tables -A INPUT -p tcp --dport 22 \
          -j ACCEPT
 
 # Allow inbound ping (ICMPv6 echo-request) with rate limiting:
-ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request \
+ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request \
          -m limit --limit 1/second --limit-burst 5 \
          -j ACCEPT
 
 # --- Outbound Rules ---
+# Allow outbound ping (ICMPv6 echo-request)  <-- this was missing
+ip6tables -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j ACCEPT
+
 # Allow outbound SSH (TCP port 22)
 ip6tables -A OUTPUT -p tcp --dport 22 -j ACCEPT
 
