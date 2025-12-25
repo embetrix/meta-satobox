@@ -26,7 +26,10 @@ RDEPENDS:${PN} += "\
     python3-logging \
     python3-fcntl \
     python3-pyserial \
+    python3-ecdsa \
+    python3-mnemonic \
     python3-typing-extensions \
+    python3-setuptools \
     hidapi \
     protobuf \
     libudev \

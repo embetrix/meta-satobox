@@ -19,6 +19,7 @@ IMAGE_INSTALL += "\
     iperf3 \
     iptables \
     sqlite3 \
+    tzdata \
     "
 
 IMAGE_INSTALL += "\
@@ -28,8 +29,7 @@ IMAGE_INSTALL += "\
     openvpn \
     wireguard-tools \
     usbguard \
-    python3-hwi \
-    python3-bitcoinlib \
+    python3-cryptoadvance-specter \
     bitcoin \
     electrs \
     "
