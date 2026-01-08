@@ -5,5 +5,5 @@ part /             --ondisk mmcblk0  --label secondary  --fixed-size 1024M  --fs
 part /             --ondisk mmcblk0  --label data       --fixed-size 1024M  --fstype=ext4
 part /             --ondisk mmcblk0  --label wallets    --fixed-size 1024M  --fstype=ext4
 part /             --ondisk mmcblk0  --label backups    --fixed-size 1024M  --fstype=ext4
-part /             --ondisk mmcblk0  --label bitcoin    --fixed-size 2048M  --fstype=ext4
+part /             --ondisk mmcblk0  --label bitcoin    --fixed-size 24576M  --fstype=ext4
 bootloader --ptable gpt
