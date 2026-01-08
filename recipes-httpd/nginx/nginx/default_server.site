@@ -1,0 +1,8 @@
+server {
+    listen 80 default_server;
+    server_name _;
+
+    location /specter/ {
+        proxy_pass http://localhost:25441/;
+    }
+}
