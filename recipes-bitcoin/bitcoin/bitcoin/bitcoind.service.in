@@ -10,6 +10,8 @@ DynamicUser=yes
 User=bitcoin
 Group=bitcoin
 SupplementaryGroups=tor
+StateDirectory=bitcoin
+BindPaths=/var/bitcoin:/var/lib/bitcoin
 ReadWritePaths=/var/wallets /var/bitcoin /var/backups
 ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
                             -startupnotify='systemd-notify --ready' \
