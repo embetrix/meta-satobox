@@ -5,6 +5,9 @@ After=bitcoind.service
 
 [Service]
 DynamicUser=yes
+User=electrs
+Group=electrs
+SupplementaryGroups=tor
 SupplementaryGroups=bitcoin
 ReadWritePaths=/var/bitcoin
 ExecStart=@bindir@/electrs  --conf /etc/electrs/config.toml
