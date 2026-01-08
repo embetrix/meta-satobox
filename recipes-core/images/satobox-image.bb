@@ -24,10 +24,6 @@ IMAGE_INSTALL += "\
 
 IMAGE_INSTALL += "\
     hostname-setup \
-    nodejs \
-    nodejs-npm \
-    openvpn \
-    wireguard-tools \
     usbguard \
     python3-cryptoadvance-specter \
     bitcoin \
