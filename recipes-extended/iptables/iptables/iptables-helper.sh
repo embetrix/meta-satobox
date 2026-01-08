@@ -26,6 +26,12 @@ iptables -A INPUT -p tcp --dport 22 \
          -m limit --limit 3/min --limit-burst 5 \
          -j ACCEPT
 
+# Allow inbound HTTP (TCP port 80)
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+# Allow inbound HTTPS (TCP port 443)
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
 # Allow inbound ping (ICMP echo-request) with rate limiting:
 iptables -A INPUT -p icmp --icmp-type echo-request \
          -m limit --limit 1/second --limit-burst 5 \
@@ -37,6 +43,12 @@ iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 # --- Outbound Rules ---
 # Allow outbound SSH (TCP port 22)
 iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
+
+# Allow outbound HTTP (TCP port 80)
+iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+# Allow outbound HTTPS (TCP port 443)
+iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
 
 # Allow outbound NTP (UDP port 123)
 iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
