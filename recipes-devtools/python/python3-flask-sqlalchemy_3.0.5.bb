@@ -16,4 +16,3 @@ RDEPENDS:${PN} += " \
     python3-sqlalchemy \
 "
 
-BBCLASSEXTEND = "native nativesdk"

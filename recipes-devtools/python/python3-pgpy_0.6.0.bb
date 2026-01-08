@@ -14,5 +14,3 @@ RDEPENDS:${PN} += "python3-core \
                    python3-six \
                    python3-dateutil \
                    python3-pyasn1"
-
-BBCLASSEXTEND = "native nativesdk"

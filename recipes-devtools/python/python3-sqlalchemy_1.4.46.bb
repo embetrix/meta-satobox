@@ -16,5 +16,3 @@ RDEPENDS:${PN} += " \
     python3-core \
     python3-typing-extensions \
 "
-
-BBCLASSEXTEND = "native nativesdk"

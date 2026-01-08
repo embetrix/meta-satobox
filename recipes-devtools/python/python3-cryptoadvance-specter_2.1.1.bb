@@ -8,6 +8,14 @@ SRC_URI = "https://files.pythonhosted.org/packages/39/94/9e8ba67a4a3c1cc98878444
 SRC_URI[md5sum] = "dc3675e5629d9ccec58b2968484fdcb6"
 SRC_URI[sha256sum] = "9b42ae5ccb34f9ebfeb0ef4cc1824f919cb10f5071891b54d1a204cb6b9f0f36"
 
+SRC_URI += "\
+    file://config.json \
+    file://bitcoin_core.json \
+    file://spectrum_node.json \
+    file://specter-tmp.conf \
+    file://specter.service.in \
+"
+
 inherit setuptools3
 
 S = "${WORKDIR}/cryptoadvance.specter-2.1.1"
@@ -66,6 +74,16 @@ RDEPENDS:${PN} += " \
             python3-specterext-faucet \
             "
 
+inherit useradd
+
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "--system specter"
+USERADD_PARAM:${PN}  = "--system  --no-create-home -g specter -s /bin/false specter"
+
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
+SYSTEMD_SERVICE:${PN} = "specter.service"
+SYSTEMD_PACKAGES = "${PN}"
+
 do_configure:prepend() {
     # Fix for Python 3.12: random.randint() no longer accepts floats.
     # We patch this after unpacking source code, but before building.
@@ -81,3 +99,30 @@ do_configure:prepend() {
     sed -i "s/db\.init_app(app)/db.init_app(app._get_current_object() if hasattr(app, '_get_current_object') else app)/" \
         ${S}/src/cryptoadvance/specterext/spectrum/service.py
 }
+
+do_install:append() {
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
+        install -d ${D}${systemd_system_unitdir}
+        install -m 0644 ${WORKDIR}/specter.service.in ${D}${systemd_system_unitdir}/specter.service
+        sed -i 's:@bindir@:${bindir}:' ${D}${systemd_system_unitdir}/specter.service
+    fi
+
+    install -d ${D}${localstatedir}/specter/nodes
+    install -m 0644 ${WORKDIR}/config.json ${D}${localstatedir}/specter/config.json
+    install -m 0644 ${WORKDIR}/bitcoin_core.json  ${D}${localstatedir}/specter/nodes/bitcoin_core.json
+    #install -m 0644 ${WORKDIR}/spectrum_node.json ${D}${localstatedir}/specter/nodes/spectrum_node.json
+    
+    sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/bitcoin_core.json"|' \
+        ${D}${localstatedir}/specter/nodes/bitcoin_core.json
+    #sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/spectrum_node.json"|' \
+    #    ${D}${localstatedir}/specter/nodes/spectrum_node.json
+
+    install -d ${D}${sysconfdir}/specter
+    install -d ${D}${sysconfdir}/tmpfiles.d
+    install -m 644 ${WORKDIR}/specter-tmp.conf ${D}${sysconfdir}/tmpfiles.d/specter.conf
+}
+
+FILES:${PN} += "\
+    ${sysconfdir}/specter \
+    ${localstatedir}/specter \
+"

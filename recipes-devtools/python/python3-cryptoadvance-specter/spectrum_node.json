@@ -1,0 +1,9 @@
+{
+    "python_class": "cryptoadvance.specterext.spectrum.spectrum_node.SpectrumNode",
+    "fullpath": "/var/specter/nodes/spectrum_node.json",
+    "name": "Spectrum Node",
+    "alias": "spectrum_node",
+    "host": "127.0.0.1",
+    "port": 50001,
+    "ssl": false
+}

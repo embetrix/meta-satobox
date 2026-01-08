@@ -26,5 +26,3 @@ do_configure:prepend() {
     # Remove "chid.pxd" or 'chid.pxd', followed optionally by a comma
     sed -i "s/['\"]chid.pxd['\"],\?//g" ${S}/setup.py
 }
-
-BBCLASSEXTEND = "native nativesdk"

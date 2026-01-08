@@ -19,5 +19,3 @@ RDEPENDS:${PN} += " \
     python3-cryptography \
     python3-logging \
 "
-
-BBCLASSEXTEND = "native nativesdk"

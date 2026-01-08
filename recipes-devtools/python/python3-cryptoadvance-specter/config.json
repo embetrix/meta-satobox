@@ -1,0 +1,46 @@
+{
+    "auth": {
+        "method": "none",
+        "password_min_chars": 6,
+        "rate_limit": 10,
+        "registration_link_timeout": 1
+    },
+    "explorers": {
+        "main": "",
+        "test": "",
+        "regtest": "",
+        "signet": ""
+    },
+    "explorer_id": {
+        "main": "CUSTOM",
+        "test": "CUSTOM",
+        "regtest": "CUSTOM",
+        "signet": "CUSTOM"
+    },
+    "asset_labels": {
+        "liquidv1": {}
+    },
+    "active_node_alias": "bitcoin_core",
+    "proxy_url": "socks5h://localhost:9050",
+    "only_tor": false,
+    "tor_control_port": "",
+    "tor_status": false,
+    "hwi_bridge_url": "/hwi/api/",
+    "uid": "dbabd7d6703b5a92",
+    "unit": "btc",
+    "price_check": true,
+    "alt_rate": 73828.0,
+    "alt_symbol": "\u20ac",
+    "price_provider": "bitstamp_eur",
+    "weight_unit": "oz",
+    "validate_merkle_proofs": false,
+    "fee_estimator": "bitcoin_core",
+    "fee_estimator_custom_url": "",
+    "hide_sensitive_info": false,
+    "autohide_sensitive_info_timeout_minutes": null,
+    "autologout_timeout_hours": 4,
+    "testing": {
+        "allow_threading_for_testing": false
+    },
+    "bitcoind": false
+}
