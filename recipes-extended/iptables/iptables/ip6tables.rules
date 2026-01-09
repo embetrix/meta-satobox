@@ -21,5 +21,9 @@
 -A OUTPUT -p tcp -m tcp --dport 53 -j ACCEPT
 -A OUTPUT -p udp -m udp --sport 546 --dport 547 -j ACCEPT
 -A OUTPUT -m owner --uid-owner tor -j ACCEPT
+-A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -p udp -j REJECT --reject-with icmp6-port-unreachable
+-A OUTPUT -p tcp -j REJECT --reject-with tcp-reset
+-A OUTPUT -p udp -j REJECT --reject-with icmp6-port-unreachable
 COMMIT
 # Completed on Wed Dec 24 11:05:40 2025
