@@ -13,7 +13,7 @@ BindPaths=/var/specter:/var/lib/specter
 Environment=HOME=/var/specter
 Environment=SPECTER_DATA_FOLDER=/var/specter
 ReadWritePaths=/var/specter
-ExecStart=/usr/bin/specter server --host 0.0.0.0 --debug
+ExecStart=@bindir@/specter server --debug
 Restart=on-failure
 RestartSec=30
 
