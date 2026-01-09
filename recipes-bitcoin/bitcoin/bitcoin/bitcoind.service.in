@@ -17,7 +17,7 @@ ExecStart=@bindir@/bitcoind -conf=/etc/bitcoin/bitcoin.conf \
                             -startupnotify='systemd-notify --ready' \
                             -shutdownnotify='systemd-notify --stopping'
 RuntimeDirectory=bitcoin
-RuntimeDirectoryMode=0700
+RuntimeDirectoryMode=0750
 Restart=on-failure
 RestartSec=5
 
