@@ -1,9 +1,10 @@
 server {
     listen 80 default_server;
+    #listen [::]:80 default_server;
     server_name _;
 
     location /specter/ {
-        proxy_pass http://localhost:25441/;
+        proxy_pass http://127.0.0.1:25441/;
         
         # Important headers for proxy awareness
         proxy_set_header Host $host;
@@ -17,9 +18,5 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
     }
 }
