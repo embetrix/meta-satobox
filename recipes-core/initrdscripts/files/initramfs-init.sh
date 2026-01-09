@@ -8,6 +8,8 @@ BITCOIN_MNT="/var/bitcoin"
 WALLETS_MNT="/var/wallets"
 BACKUPS_MNT="/var/backups"
 ROOT_DEV=""
+NVME_DEV=""
+BITCOIN_DEV=""
 OPT_ROOT="ro,noatime"
 OPT_PART="noexec,nodev,nosuid,noatime"
 
@@ -73,6 +75,84 @@ fi
 
 wait_for_dev $ROOT_DEV
 
+grow_last_partition() {
+	# Uses: DEVICE, PART_NBR, PART, LABEL, SECTORS
+	# Resizes the last partition to fill free space and grows the ext filesystem.
+	echo "Checking if partition $PART can be extended..."
+	DEVICE_SECTORS=$(blockdev --getsz $DEVICE)
+	DEVICE_END=$((DEVICE_SECTORS - 1))
+
+	# Get partition end sector from sgdisk partition table
+	LAST_PART_END=$(sgdisk -p $DEVICE | grep "^ *$PART_NBR " | awk '{print int($3)}')
+
+	if [ -n "$LAST_PART_END" ] && [ $LAST_PART_END -lt $DEVICE_END ]; then
+		echo "Partition sectors: $SECTORS"
+		echo "Last partition end: $LAST_PART_END"
+		echo "Device end: $DEVICE_END"
+		echo "Partition has free space available. Resizing partition $PART to maximum..."
+		sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
+		partprobe $DEVICE
+
+		# Wait and force kernel to re-read partition table
+		sleep 1
+		blockdev --rereadpt $DEVICE 2>/dev/null || true
+		sleep 1
+
+		# Get new partition size after resize
+		NEW_SECTORS=$(blockdev --getsz $PART)
+		echo "Partition size after resize: $NEW_SECTORS sectors (was $SECTORS)"
+
+		# Only proceed with filesystem resize if partition actually grew
+		if [ $NEW_SECTORS -gt $SECTORS ]; then
+			echo "Resizing filesystem..."
+			resize2fs $PART
+			echo "Filesystem resize completed successfully."
+			sleep 2
+			echo "Rebooting system to apply changes..."
+			reboot -f
+		else
+			echo "Partition size did not change, no resize needed."
+		fi
+	fi
+}
+
+
+setup_nvme() {
+
+	for d in /dev/nvme*n1; do
+		[ -b "$d" ] || continue
+		NVME_DEV="$d"
+		break
+	done
+
+	if [ -z "$NVME_DEV" ]; then
+		return 0
+	fi
+
+	echo "NVMe device detected: $NVME_DEV"
+
+	# Ensure the NVMe disk is a single GPT partition we can use for bitcoin
+	PART_COUNT=$(sgdisk -p "$NVME_DEV" 2>/dev/null | grep "^ *[0-9]" | wc -l)
+	NVME_PART="${NVME_DEV}p1"
+	NVME_LABEL=$(blkid -s PARTLABEL -o value "$NVME_PART" 2>/dev/null || true)
+
+	if [ "$PART_COUNT" -ne 1 ] || [ "$NVME_LABEL" != "bitcoin" ]; then
+		echo "Preparing $NVME_DEV as a single 'bitcoin' partition (this may erase existing data)..."
+		sgdisk --zap-all "$NVME_DEV" || error_exit "Failed to wipe partition table on $NVME_DEV"
+		sgdisk -n 1:0:0 -c 1:bitcoin "$NVME_DEV" || error_exit "Failed to create bitcoin partition on $NVME_DEV"
+		partprobe "$NVME_DEV" 2>/dev/null || true
+		sleep 1
+	fi
+
+	FSTYPE=$(blkid -s TYPE -o value "$NVME_PART" 2>/dev/null || true)
+	if [ "$FSTYPE" != "ext4" ]; then
+		echo "Formatting $NVME_PART as ext4 (label: bitcoin) (was: ${FSTYPE:-none})..."
+		mkfs.ext4 -F -L bitcoin "$NVME_PART" || error_exit "Failed to format $NVME_PART"
+	fi
+
+	BITCOIN_DEV="$NVME_PART"
+}
+
 # Handle both mmcblkXpY and sdaY naming schemes
 if echo "$ROOT_DEV" | grep -q 'p[0-9]$'; then
 	# mmcblk or nvme device (has 'p' separator)
@@ -108,42 +188,13 @@ if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ]; then
 	error_exit "Failed to identify partition details!"
 fi
 
-# Check if partition can be extended to maximum
-echo "Checking if partition $PART can be extended..."
-DEVICE_SECTORS=$(blockdev --getsz $DEVICE)
-DEVICE_END=$((DEVICE_SECTORS - 1))
 
-# Get partition end sector from sgdisk partition table
-LAST_PART_END=$(sgdisk -p $DEVICE | grep "^ *$PART_NBR " | awk '{print int($3)}')
+# If an NVMe disk is present, use it for the bitcoin volume
+setup_nvme
 
-if [ -n "$LAST_PART_END" ] && [ $LAST_PART_END -lt $DEVICE_END ]; then
-	echo "Partition sectors: $SECTORS"
-	echo "Last partition end: $LAST_PART_END"
-	echo "Device end: $DEVICE_END"
-	echo "Partition has free space available. Resizing partition $PART to maximum..."
-	sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
-	partprobe $DEVICE
-
-	# Wait and force kernel to re-read partition table
-	sleep 1
-	blockdev --rereadpt $DEVICE 2>/dev/null || true
-	sleep 1
-
-	# Get new partition size after resize
-	NEW_SECTORS=$(blockdev --getsz $PART)
-	echo "Partition size after resize: $NEW_SECTORS sectors (was $SECTORS)"
-
-	# Only proceed with filesystem resize if partition actually grew
-	if [ $NEW_SECTORS -gt $SECTORS ]; then
-		echo "Resizing filesystem..."
-		resize2fs $PART
-		echo "Filesystem resize completed successfully."
-		sleep 2
-		echo "Rebooting system to apply changes..."
-		reboot -f
-	else
-		echo "Partition size did not change, no resize needed."
-	fi
+# Only auto-grow the SD card partition layout when no NVMe disk is present.
+if [ -z "$NVME_DEV" ]; then
+	grow_last_partition
 fi
 
 # Mount root filesystem
@@ -152,7 +203,11 @@ mount -o $OPT_ROOT $ROOT_DEV $ROOT_MNT   || error_exit "cannot mount root filesy
 
 # Mount data volume
 mount -o $OPT_PART -L data     $ROOT_MNT$DATA_MNT     || error_exit "cannot mount $DATA_MNT"
-mount -o $OPT_PART -L bitcoin  $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT"
+if [ -n "$BITCOIN_DEV" ]; then
+	mount -o $OPT_PART "$BITCOIN_DEV" $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT from $BITCOIN_DEV"
+else
+	mount -o $OPT_PART -L bitcoin  $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT"
+fi
 mount -o $OPT_PART -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
 mount -o $OPT_PART -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
 
