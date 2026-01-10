@@ -110,12 +110,12 @@ do_install:append() {
     install -d ${D}${localstatedir}/specter/nodes
     install -m 0644 ${WORKDIR}/config.json ${D}${localstatedir}/specter/config.json
     install -m 0644 ${WORKDIR}/bitcoin_core.json  ${D}${localstatedir}/specter/nodes/bitcoin_core.json
-    #install -m 0644 ${WORKDIR}/spectrum_node.json ${D}${localstatedir}/specter/nodes/spectrum_node.json
+    install -m 0644 ${WORKDIR}/spectrum_node.json ${D}${localstatedir}/specter/nodes/spectrum_node.json
     
     sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/bitcoin_core.json"|' \
         ${D}${localstatedir}/specter/nodes/bitcoin_core.json
-    #sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/spectrum_node.json"|' \
-    #    ${D}${localstatedir}/specter/nodes/spectrum_node.json
+    sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/spectrum_node.json"|' \
+        ${D}${localstatedir}/specter/nodes/spectrum_node.json
 
     install -d ${D}${sysconfdir}/specter
     install -d ${D}${sysconfdir}/tmpfiles.d
