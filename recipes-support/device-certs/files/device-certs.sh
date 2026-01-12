@@ -1,6 +1,13 @@
 #!/bin/sh
 # generate self-signed device certificates
 #
+# Note: This is not production ready, just for testing purposes
+#       the device keys and certs are stored in plain filesystem 
+#       so malicious attacked can easily extract them  and implement a MITM attack.
+#
+#  ToDo: Implement secure storage using a TPM or secure element and a 
+#        certificate management for renewal using PKI system such as ECJBCA or smallsteps 
+# 
 
 # Get device IP
 DEVICE_IP=$(networkctl status | grep Address | awk '{print $2}')
