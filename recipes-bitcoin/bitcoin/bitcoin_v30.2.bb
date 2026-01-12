@@ -9,8 +9,8 @@ SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=30.x;protocol=https \
            file://bitcoin.conf \
            file://bitcoin-tmp.conf \
            "
-#v30.1
-SRCREV = "dd47caee822b0154b573b6c4627eedaa133330fe"
+#v30.2
+SRCREV = "4d7d5f6b79d4c11c47e7a828d81296918fd11d4d"
 S = "${WORKDIR}/git"
 
 TOOLCHAIN = "clang"
