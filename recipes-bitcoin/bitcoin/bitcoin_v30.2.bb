@@ -1,7 +1,7 @@
 SUMMARY = "Bitcoin Core integration"
 HOMEPAGE = "https://bitcoincore.org"
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://COPYING;md5=1bcc4deb6e65214278a39df8e5d29902"
+LIC_FILES_CHKSUM = "file://COPYING;md5=502a9495576ff2bb756c7a6abf0b85c0"
 
 SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=30.x;protocol=https \
            file://0001-bitcoind-disable-noisy-UpdateTipLog-logs.patch \
