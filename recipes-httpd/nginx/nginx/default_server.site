@@ -1,6 +1,14 @@
 server {
-    listen 80 default_server;
+
+    listen 443 ssl;
+    #listen 80 default_server;
     #listen [::]:80 default_server;
+
+    ssl_certificate     /etc/certs/device-cert.pem;
+    ssl_certificate_key /etc/certs/device-key.pem;
+
+    ssl_protocols TLSv1.3;
+
     server_name _;
 
     # Canonicalize to trailing slash so relative URLs work
