@@ -1,0 +1,11 @@
+[Unit]
+Description=device certs server service
+Before=nginx.service
+Wants=nginx.service
+
+[Service]
+WorkingDirectory=/etc/certs
+ExecStart=/usr/bin/device-certs
+
+[Install]
+WantedBy=multi-user.target
