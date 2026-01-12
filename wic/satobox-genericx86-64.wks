@@ -3,6 +3,7 @@ part /             --ondisk sda  --label efi        --fixed-size 50M    --source
 part /             --ondisk sda  --label primary    --fixed-size 1024M  --fstype=ext4   --source rootfs
 part /             --ondisk sda  --label secondary  --fixed-size 1024M  --fstype=ext4   --source rootfs
 part /             --ondisk sda  --label data       --fixed-size 1024M  --fstype=ext4
+part /             --ondisk sda  --label wallets    --fixed-size 1024M  --fstype=ext4
 part /             --ondisk sda  --label backups    --fixed-size 1024M  --fstype=ext4
 part /             --ondisk sda  --label bitcoin    --fixed-size 24576M --fstype=ext4
 bootloader --ptable gpt --configfile=grub.cfg

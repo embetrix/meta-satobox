@@ -5,6 +5,7 @@ export PATH=$PATH:/sbin:/usr/sbin
 ROOT_MNT="/tmp/rootfs"
 DATA_MNT="/var/data"
 BITCOIN_MNT="/var/bitcoin"
+WALLETS_MNT="/var/wallets"
 BACKUPS_MNT="/var/backups"
 ROOT_DEV=""
 NVME_DEV=""
@@ -207,6 +208,7 @@ if [ -n "$BITCOIN_DEV" ]; then
 else
 	mount -o $OPT_PART -L bitcoin  $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT"
 fi
+mount -o $OPT_PART -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
 mount -o $OPT_PART -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
 
 # Switch to real root
