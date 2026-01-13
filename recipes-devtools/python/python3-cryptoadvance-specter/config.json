@@ -20,7 +20,7 @@
     "asset_labels": {
         "liquidv1": {}
     },
-    "active_node_alias": "electrum_node",
+    "active_node_alias": "spectrum_node",
     "proxy_url": "socks5h://localhost:9050",
     "only_tor": false,
     "tor_control_port": "",
@@ -33,7 +33,7 @@
     "price_provider": "bitstamp_usd",
     "weight_unit": "oz",
     "validate_merkle_proofs": false,
-    "fee_estimator": "electrum_node",
+    "fee_estimator": "spectrum_node",
     "fee_estimator_custom_url": "",
     "hide_sensitive_info": false,
     "autohide_sensitive_info_timeout_minutes": 2,
