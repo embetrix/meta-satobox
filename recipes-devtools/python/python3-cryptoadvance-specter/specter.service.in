@@ -1,5 +1,6 @@
 [Unit]
 Description=Cryptoadvance Specter Server
+After=electrs.service
 
 [Service]
 DynamicUser=yes
