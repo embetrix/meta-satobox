@@ -1,6 +1,6 @@
 # meta-satobox
 
-<p align ="center"><img src=satobox.jpeg width=200 height=200 /></p>
+<p align ="center"><img src=satobox.jpeg width=480 height=240 /></p>
 
 ## Overview
 
