@@ -1,13 +1,12 @@
 [Unit]
 Description=Electrum Server
-Requires=bitcoind.service
 After=bitcoind.service
 
 [Service]
 DynamicUser=yes
 User=electrs
 Group=electrs
-SupplementaryGroups=bitcoin tor
+SupplementaryGroups=bitcoin
 StateDirectory=bitcoin
 BindPaths=/var/bitcoin:/var/lib/bitcoin
 ReadWritePaths=/var/bitcoin
