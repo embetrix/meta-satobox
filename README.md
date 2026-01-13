@@ -1,6 +1,6 @@
 # meta-satobox
 
-<p align ="center"><img src=satobox.jpeg width=480 height=240 /></p>
+<p align ="center"><img src=satobox.jpeg width=480 height=280 /></p>
 
 ## Overview
 
@@ -8,10 +8,10 @@
 
 ### Key Features
 
-- `Bitcoin Full Node`: Complete Bitcoin Core daemon with RPC and multi-wallet support
+- `Bitcoin Full Node`: Complete Bitcoin Core daemon with RPC and multi hardware wallet support
 - `Privacy-First`: Integrated Tor for anonymous networking
 - `Transaction Indexing`: Built-in Electrs server for wallet indexing
-- `Secure`: Hardened with security best practices (meta-security, usbguard)
+- `Secure`: Hardened with security best practices
 - `Flexible Deployment`: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU ressources
 - `Reproducible Builds`: Yocto for consistent, reliable builds
 
