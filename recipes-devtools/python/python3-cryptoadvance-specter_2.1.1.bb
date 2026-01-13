@@ -10,7 +10,7 @@ SRC_URI[sha256sum] = "9b42ae5ccb34f9ebfeb0ef4cc1824f919cb10f5071891b54d1a204cb6b
 
 SRC_URI += "\
     file://config.json \
-    file://bitcoin_core.json \
+    file://bitcoin_node.json \
     file://spectrum_node.json \
     file://specter-tmp.conf \
     file://specter.service.in \
@@ -109,11 +109,11 @@ do_install:append() {
 
     install -d ${D}${localstatedir}/specter/nodes
     install -m 0644 ${WORKDIR}/config.json ${D}${localstatedir}/specter/config.json
-    install -m 0644 ${WORKDIR}/bitcoin_core.json  ${D}${localstatedir}/specter/nodes/bitcoin_core.json
+    install -m 0644 ${WORKDIR}/bitcoin_node.json  ${D}${localstatedir}/specter/nodes/bitcoin_node.json
     install -m 0644 ${WORKDIR}/spectrum_node.json ${D}${localstatedir}/specter/nodes/spectrum_node.json
     
-    sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/bitcoin_core.json"|' \
-        ${D}${localstatedir}/specter/nodes/bitcoin_core.json
+    sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/bitcoin_node.json"|' \
+        ${D}${localstatedir}/specter/nodes/bitcoin_node.json
     sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/spectrum_node.json"|' \
         ${D}${localstatedir}/specter/nodes/spectrum_node.json
 

@@ -1,6 +1,6 @@
 {
-  "name": "Bitcoin Core (signet)",
-  "alias": "bitcoin_core",
+  "name": "Bitcoin Node (signet)",
+  "alias": "bitcoin_node",
   "python_class": "cryptoadvance.specter.node.Node",
   "autodetect": false,
   "host": "127.0.0.1",
@@ -8,8 +8,6 @@
   "protocol": "http",
   "user": "satobox",
   "password": "sat0b0x",
-  "use_tor": false,
-  "only_tor": false,
   "datadir": "/var/bitcoin",
   "network": "signet"
 }

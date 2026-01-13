@@ -20,7 +20,7 @@
     "asset_labels": {
         "liquidv1": {}
     },
-    "active_node_alias": "bitcoin_core",
+    "active_node_alias": "electrum_node",
     "proxy_url": "socks5h://localhost:9050",
     "only_tor": false,
     "tor_control_port": "",
@@ -29,11 +29,11 @@
     "uid": "dbabd7d6703b5a92",
     "unit": "btc",
     "price_check": true,
-    "alt_symbol": "\u20ac",
-    "price_provider": "bitstamp_eur",
+    "alt_symbol": "$",
+    "price_provider": "bitstamp_usd",
     "weight_unit": "oz",
     "validate_merkle_proofs": false,
-    "fee_estimator": "bitcoin_core",
+    "fee_estimator": "electrum_node",
     "fee_estimator_custom_url": "",
     "hide_sensitive_info": false,
     "autohide_sensitive_info_timeout_minutes": 2,
