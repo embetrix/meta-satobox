@@ -11,7 +11,7 @@
 - Bitcoin Full Node: Complete Bitcoin Core daemon with RPC and multi hardware wallet support
 - Privacy: Integrated Tor for anonymous networking
 - Transaction Indexing: Built-in Electrs server for wallet indexing
-- Securiry: Hardened with security best practices
+- Security: Hardened with security best practices
 - Flexible Deployment: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU ressources
 - Reproducible Build: Yocto for consistent and reliable builds from the sources
 
@@ -40,6 +40,11 @@ pip3 install kas
 
 or alternatively use VScode with Docker devcontainer support
 
+```
+KAS_MACHINE=<MACHINE> kas-container build kas-satobox.yml
+```
+for example:
+
 ### Raspberrypi5
 
 ```
@@ -49,13 +54,6 @@ KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ### Qemu
 ```
 KAS_MACHINE=qemux86-64 kas-container build kas-satobox.yml
-```
-
-### Run in QEMU Emulator
-
-With KVM acceleration:
-```
-KAS_MACHINE=qemux86-64 kas shell kas-satobox.yml -c 'runqemu wic ovmf kvm serialstdio nographic qemuparams="-m 2048"'
 ```
 
 ## Documentation
