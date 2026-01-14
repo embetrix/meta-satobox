@@ -54,11 +54,6 @@ for example:
 KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ```
 
-### Qemu
-```
-KAS_MACHINE=qemux86-64 kas-container build kas-satobox.yml
-```
-
 ## Documentation
 
 - [Usage Guide](USAGE.md) Wallet operations, transaction management, and CLI commands
