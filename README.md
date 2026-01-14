@@ -16,15 +16,7 @@
 - Reproducible Build: Yocto for consistent and reliable builds from the sources
 
 
-## Bitcoin network
 
-By default Satobox is configured to run on the **signet** test network.
-
-To enable **mainnet**, build with the `mainnet` distro feature enabled (for example in `conf/local.conf` or your distro config):
-
-```conf
-DISTRO_FEATURES:append = " mainnet"
-```
 
 ## Build 
 
@@ -38,11 +30,22 @@ Mainnet requires a dedicated NVMe disk (or equivalent persistent storage) sized 
 pip3 install kas
 ```
 
-or alternatively use VScode with Docker devcontainer support
+### Bitcoin network
+
+By default Satobox is configured to run on the **signet** test network.
+
+To enable **mainnet**, build with the `mainnet` distro feature enabled (for example in `conf/local.conf` or your distro config):
+
+```conf
+DISTRO_FEATURES:append = " mainnet"
+```
+
+To perform a build:
 
 ```
 KAS_MACHINE=<MACHINE> kas-container build kas-satobox.yml
 ```
+
 for example:
 
 ### Raspberrypi5
