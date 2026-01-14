@@ -23,14 +23,14 @@ DEPENDS += "doxygen-native"
 EXTRA_OECMAKE += "-DBUILD_BENCH=OFF \
                   -DBUILD_TESTS=OFF \
                   -DBUILD_GUI=OFF \
-                  -DENABLE_IPC=OFF"
+                  -DENABLE_IPC=OFF \
+                  -DCMAKE_BUILD_TYPE=Release"
 
-PACKAGECONFIG ?= "shared wallet zmq"
+PACKAGECONFIG ?= "shared wallet"
 PACKAGECONFIG[shared] = "-DBUILD_SHARED_LIBS=ON, -DBUILD_SHARED_LIBS=OFF"
 PACKAGECONFIG[man]    = "-DINSTALL_MAN=ON, -DINSTALL_MAN=OFF"
 PACKAGECONFIG[wallet] = "-DENABLE_WALLET=ON, -DENABLE_WALLET=OFF, sqlite3"
 PACKAGECONFIG[zmq]    = "-DWITH_ZMQ=ON, -DWITH_ZMQ=OFF, zeromq"
-
 
 inherit useradd
 
