@@ -54,6 +54,16 @@ for example:
 KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ```
 
+## Flash SD Card
+
+Flash image on a SD Card using [bmap-tools](https://github.com/intel/bmap-tools):
+
+```
+sudo bmaptool copy \
+    build/tmp/deploy/images/raspberrypi5/satobox-image.wic.bz2 \
+    /dev/mmcblk0
+```
+
 ## Documentation
 
 - [Usage Guide](USAGE.md) Wallet operations, transaction management, and CLI commands
