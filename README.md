@@ -15,23 +15,26 @@
 - `Flexible Deployment`: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU ressources
 - `Reproducible Builds`: Yocto for consistent, reliable builds
 
-## Requirements
-
-- KAS build system
-- QEMU (for emulation testing)
-- 2GB+ RAM
 
 ## Build 
+
+This layer can be integrated in your layers or built standalone using [kas-tool](https://github.com/siemens/kas):
+
+```
+pip3 install kas
+```
+
+or alternatively use VScode with Docker devcontainer support
 
 ### Raspberrypi5
 
 ```
-KAS_MACHINE=raspberrypi5 kas build kas-satobox.yml
+KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ```
 
 ### Qemu
 ```
-KAS_MACHINE=qemux86-64 kas build kas-satobox.yml
+KAS_MACHINE=qemux86-64 kas-container build kas-satobox.yml
 ```
 
 ### Run in QEMU Emulator
@@ -43,8 +46,8 @@ KAS_MACHINE=qemux86-64 kas shell kas-satobox.yml -c 'runqemu wic ovmf kvm serial
 
 ## Documentation
 
-- [Usage Guide](USAGE.md) - Wallet operations, transaction management, and CLI commands
-- [Disclaimer & Legal](DISCLAIMER.md) - Important legal information
+- [Usage Guide](USAGE.md) Wallet operations, transaction management, and CLI commands
+- [Disclaimer & Legal](DISCLAIMER.md) Important legal information
 
 
 ## License
