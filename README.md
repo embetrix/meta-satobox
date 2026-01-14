@@ -53,7 +53,7 @@ KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 
 ## Flash SD Card
 
-Flash image on a SD Card using [bmap-tools](https://github.com/intel/bmap-tools):
+Flash image on a SD Card using [bmap-tools](https://github.com/yoctoproject/bmaptool):
 
 ```
 sudo bmaptool copy \
