@@ -42,9 +42,6 @@ inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "bitcoind.service"
 SYSTEMD_PACKAGES = "${PN}"
 
-BITCOIND_RPC_USER   ?= "satobox"
-BITCOIND_RPC_PASSWD ?= "sat0b0x"
-
 do_install:append() {
 
     install -d ${D}${sysconfdir}/bitcoin
@@ -55,6 +52,24 @@ do_install:append() {
     # Generate RPC auth hash using the script in Bitcoin source
     RPC_AUTH_HASH=$(${S}/share/rpcauth/rpcauth.py ${BITCOIND_RPC_USER} ${BITCOIND_RPC_PASSWD} | grep "rpcauth=" | cut -d'=' -f2-)
     sed -i "s|^rpcauth=.*|rpcauth=${RPC_AUTH_HASH}|" ${D}${sysconfdir}/bitcoin/bitcoin.conf
+
+    # Configure for mainnet if DISTRO_FEATURES is set
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', 'true', 'false', d)}; then
+        # Disable signet and switch ports to mainnet
+        sed -i '/^signet=1/d' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+
+        # Keep the signet listen/bind settings but apply them globally by dropping the section header
+        sed -i '/^\[signet\]$/d' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+
+        # Keep the signet listen/bind settings but apply them globally by dropping the section header
+        sed -i '/^\[signet\]$/d' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+        # Mainnet defaults
+        sed -i 's/^rpcport=38332$/rpcport=8332/' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+        sed -i 's/^port=38333$/port=8333/' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+        
+        # replace all occurrences of "signet" with "mainnet"
+        sed -i 's/signet/mainnet/g' ${D}${sysconfdir}/bitcoin/bitcoin.conf
+    fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${systemd_system_unitdir}
