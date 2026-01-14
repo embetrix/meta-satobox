@@ -1,7 +1,7 @@
 # description: Create an EFI disk image for genericx86*
 part /             --ondisk sda  --label efi        --fixed-size 50M    --source bootimg-efi --sourceparams="loader=grub-efi" --active --align 1024
-part /             --ondisk sda  --label primary    --fixed-size 1024M  --fstype=ext4   --source rootfs
-part /             --ondisk sda  --label secondary  --fixed-size 1024M  --fstype=ext4
+part /             --ondisk sda  --label primary    --fixed-size 2048M  --fstype=ext4   --source rootfs
+part /             --ondisk sda  --label secondary  --fixed-size 2048M  --fstype=ext4
 part /             --ondisk sda  --label data       --fixed-size 1024M  --fstype=ext4
 part /             --ondisk sda  --label wallets    --fixed-size 1024M  --fstype=ext4
 part /             --ondisk sda  --label backups    --fixed-size 1024M  --fstype=ext4
