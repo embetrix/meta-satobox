@@ -22,10 +22,6 @@
 
 This layer can be integrated in your layers or built standalone using [kas-tool](https://github.com/siemens/kas):
 
-
-
-Mainnet requires a dedicated NVMe disk (or equivalent persistent storage) sized to hold the Bitcoin blockchain.
-
 ```
 pip3 install kas
 ```
@@ -39,6 +35,7 @@ To enable **mainnet**, build with the `mainnet` distro feature enabled (for exam
 ```conf
 DISTRO_FEATURES:append = " mainnet"
 ```
+Mainnet requires a dedicated NVMe disk (or equivalent persistent storage) sized to hold the Bitcoin blockchain.
 
 To perform a build:
 
