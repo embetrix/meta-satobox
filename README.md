@@ -23,23 +23,29 @@
 
 ## Build 
 
+### Raspberrypi5
+
+```
+KAS_MACHINE=raspberrypi5 kas build kas-satobox.yml
+```
+
+### Qemu
 ```
 KAS_MACHINE=qemux86-64 kas build kas-satobox.yml
 ```
 
-## Run in QEMU Emulator
+### Run in QEMU Emulator
 
 With KVM acceleration:
 ```
 KAS_MACHINE=qemux86-64 kas shell kas-satobox.yml -c 'runqemu wic ovmf kvm serialstdio nographic qemuparams="-m 2048"'
 ```
 
-
 ## Documentation
 
 - [Usage Guide](USAGE.md) - Wallet operations, transaction management, and CLI commands
 - [Disclaimer & Legal](DISCLAIMER.md) - Important legal information
-- See [layers/README.md](layers/README.md) for Yocto/OE-Core documentation
+
 
 ## License
 
