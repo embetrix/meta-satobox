@@ -112,10 +112,26 @@ do_install:append() {
     install -m 0644 ${WORKDIR}/bitcoin_node.json  ${D}${localstatedir}/specter/nodes/bitcoin_node.json
     install -m 0644 ${WORKDIR}/spectrum_node.json ${D}${localstatedir}/specter/nodes/spectrum_node.json
     
+    # Inject RPC credentials from BitBake variables
+    sed -i "s|\"user\"[[:space:]]*:[[:space:]]*\"[^\"]*\"|\"user\": \"${BITCOIND_RPC_USER}\"|" \
+        ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+    sed -i "s|\"password\"[[:space:]]*:[[:space:]]*\"[^\"]*\"|\"password\": \"${BITCOIND_RPC_PASSWD}\"|" \
+        ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+
     sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/bitcoin_node.json"|' \
         ${D}${localstatedir}/specter/nodes/bitcoin_node.json
     sed -i 's|^\([[:space:]]*"fullpath"[[:space:]]*:[[:space:]]*\)"[^"]*"|\1"/var/specter/nodes/spectrum_node.json"|' \
         ${D}${localstatedir}/specter/nodes/spectrum_node.json
+
+    # Configure Nodes for mainnet if DISTRO_FEATURES is set
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', 'true', 'false', d)}; then
+        sed -i 's|"network": "signet"|"network": "main"|' \
+            ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+        sed -i 's|"port": 38332|"port": 8332|' \
+            ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+        sed -i 's|"name": "Bitcoin Node (signet)"|"name": "Bitcoin Node"|' \
+            ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+    fi
 
     install -d ${D}${sysconfdir}/specter
     install -d ${D}${sysconfdir}/tmpfiles.d
