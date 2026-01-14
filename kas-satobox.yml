@@ -53,4 +53,3 @@ local_conf_header:
     ROOT_PASSWORD   = "r00t"
     BITCOIND_RPC_USER   = "satobox"
     BITCOIND_RPC_PASSWD = "sat0b0x"
-    DISTRO_FEATURES  += "mainnet"
