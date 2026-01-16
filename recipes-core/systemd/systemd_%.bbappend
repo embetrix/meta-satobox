@@ -2,3 +2,9 @@
 PACKAGECONFIG:append = " cryptsetup cryptsetup-plugins"
 
 RRECOMMENDS:${PN} += "systemd-crypt systemd-container"
+
+do_install:append() {
+
+     # enable RuntimeWatchdogSec option and set it to 10s
+     sed -i '/#RuntimeWatchdogSec=/c\\RuntimeWatchdogSec=10' ${D}${sysconfdir}/systemd/system.conf
+}
