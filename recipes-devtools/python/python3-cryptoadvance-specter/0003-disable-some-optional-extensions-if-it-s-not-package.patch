@@ -1,0 +1,34 @@
+From 3305d276733591d823820ee1af8583c8a2d54283 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 10:19:35 +0100
+Subject: [PATCH 3/5] disable some optional extensions, if it's not packaged,
+ Specter should still start
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/specter/config.py | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/src/cryptoadvance/specter/config.py b/src/cryptoadvance/specter/config.py
+index af73dee8..7462967e 100644
+--- a/src/cryptoadvance/specter/config.py
++++ b/src/cryptoadvance/specter/config.py
+@@ -189,15 +189,9 @@ class BaseConfig(object):
+ 
+     # List of extensions (services) to potentially load
+     EXTENSION_LIST = [
+-        "cryptoadvance.specterext.swan.service",
+-        "cryptoadvance.specterext.liquidissuer.service",
+-        "cryptoadvance.specterext.devhelp.service",
+         "cryptoadvance.specterext.notifications.service",
+-        "cryptoadvance.specterext.exfund.service",
+-        "cryptoadvance.specterext.faucet.service",
+         "cryptoadvance.specterext.electrum.service",
+         "cryptoadvance.specterext.spectrum.service",
+-        "cryptoadvance.specterext.stacktrack.service",
+     ]
+ 
+     # This is just a placeholder in order to be aware that you cannot set this
+-- 
+2.43.0
+

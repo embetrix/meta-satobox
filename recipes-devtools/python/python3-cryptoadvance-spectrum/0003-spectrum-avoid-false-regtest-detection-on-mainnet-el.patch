@@ -1,0 +1,163 @@
+From c8795f388f3fcbadd61d2de3d0206b0b6203fcb7 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 12:59:01 +0100
+Subject: [PATCH 3/4] spectrum: avoid false regtest detection on mainnet
+ electrs
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/spectrum/spectrum.py | 54 ++++++++++++++++++++++++--
+ tests/test_spectrum.py                 | 27 +++++++++++++
+ 2 files changed, 78 insertions(+), 3 deletions(-)
+
+diff --git a/src/cryptoadvance/spectrum/spectrum.py b/src/cryptoadvance/spectrum/spectrum.py
+index c275f47..c9a7c29 100644
+--- a/src/cryptoadvance/spectrum/spectrum.py
++++ b/src/cryptoadvance/spectrum/spectrum.py
+@@ -74,6 +74,7 @@ ROOT_HASHES = {
+     "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f": "main",
+     "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943": "test",
+     "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6": "signet",
++    "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206": "regtest",
+     # anything else is regtest
+ }
+ 
+@@ -100,6 +101,8 @@ class Spectrum:
+         self.proxy_url = proxy_url
+         assert type(ssl) == bool, f"ssl is of type {type(ssl)}"
+         self.datadir = datadir
++        self._chain_detection_lock = threading.Lock()
++        self._last_chain_detection_attempt_ts = 0.0
+         if not os.path.exists(self.txdir):
+             logger.info(f"Creating txdir {self.txdir} ")
+             os.makedirs(self.txdir)
+@@ -124,13 +127,55 @@ class Spectrum:
+                 res = self.sock.call("blockchain.headers.subscribe")
+                 self.blocks = res["height"]
+                 self.bestblockhash = get_blockhash(res["hex"])
+-                logger.info("detect chain from header")
++                self._maybe_detect_chain(force=True)
++            except Exception as e:
++                logger.error(f"Electrum not ready during startup: {e}")
++
++    def _maybe_detect_chain(self, force: bool = False) -> None:
++        """Best-effort chain detection.
++
++        Important: startup can happen while electrs is still indexing.
++        In that case we must not permanently stick to the default (regtest);
++        instead we retry later on demand.
++        """
++        if not force and self.roothash:
++            return
++        if not self.sock or self.sock.status != "ok":
++            return
++
++        now = time.time()
++        # throttle retries to avoid spamming electrs while it's indexing
++        if not force and now - self._last_chain_detection_attempt_ts < 10:
++            return
++
++        with self._chain_detection_lock:
++            now = time.time()
++            if not force and now - self._last_chain_detection_attempt_ts < 10:
++                return
++            self._last_chain_detection_attempt_ts = now
++
++            try:
++                features = self.sock.call("server.features")
++                genesis_hash = None
++                if isinstance(features, dict):
++                    genesis_hash = features.get("genesis_hash")
++                if isinstance(genesis_hash, str) and len(genesis_hash) == 64:
++                    chain = ROOT_HASHES.get(genesis_hash, "regtest")
++                    self.roothash = genesis_hash
++                    self.chain = chain
++                    logger.info(f"Detected chain={self.chain} from server.features")
++                    return
++            except Exception:
++                # Fallback to header-based detection below.
++                pass
++
++            try:
+                 rootheader = self.sock.call("blockchain.block.header", [0])
+-                logger.info(f"Set roothash {self.roothash}")
+                 self.roothash = get_blockhash(rootheader)
+                 self.chain = ROOT_HASHES.get(self.roothash, "regtest")
++                logger.info(f"Detected chain={self.chain} from genesis header")
+             except Exception as e:
+-                logger.error(f"Electrum not ready during startup: {e}")
++                logger.info(f"Chain detection not available yet: {e}")
+ 
+     def stop(self):
+         logger.info("Stopping Spectrum")
+@@ -431,6 +476,7 @@ class Spectrum:
+ 
+     @property
+     def network(self):
++        self._maybe_detect_chain()
+         return NETWORKS.get(self.chain, NETWORKS["main"])
+ 
+     def process_notification(self, data):
+@@ -520,6 +566,7 @@ class Spectrum:
+ 
+     @rpc
+     def getblockchaininfo(self):
++        self._maybe_detect_chain()
+         return {
+             "chain": self.chain,
+             "blocks": self.blocks,
+@@ -602,6 +649,7 @@ class Spectrum:
+ 
+     @rpc
+     def getblockhash(self, height):
++        self._maybe_detect_chain()
+         if height == 0:
+             return self.roothash
+         if height == self.blocks:
+diff --git a/tests/test_spectrum.py b/tests/test_spectrum.py
+index 48e6043..e874906 100644
+--- a/tests/test_spectrum.py
++++ b/tests/test_spectrum.py
+@@ -1,5 +1,6 @@
+ import logging
+ import time
++import threading
+ from unittest.mock import MagicMock
+ 
+ from flask import Flask
+@@ -10,6 +11,32 @@ from embit.bip32 import NETWORKS
+ 
+ logger = logging.getLogger("cryptoadvance")
+ 
++
++def test_chain_detection_uses_server_features_genesis_hash():
++    spectrum = Spectrum.__new__(Spectrum)
++    spectrum.roothash = ""
++    spectrum.chain = "regtest"
++    spectrum._chain_detection_lock = threading.Lock()
++    spectrum._last_chain_detection_attempt_ts = 0.0
++
++    sock = MagicMock()
++    sock.status = "ok"
++
++    def fake_call(method, params=None):
++        if method == "server.features":
++            return {
++                "genesis_hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
++            }
++        raise AssertionError(f"Unexpected electrum call: {method}")
++
++    sock.call = fake_call
++    spectrum.sock = sock
++
++    spectrum._maybe_detect_chain(force=True)
++
++    assert spectrum.chain == "main"
++    assert spectrum.roothash == "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
++
+ def test_importdescriptor(app: Flask, rootkey_hold_accident, acc0key0addr_hold_accident):
+     ''' THis does:
+         * Creating a wallet
+-- 
+2.43.0
+

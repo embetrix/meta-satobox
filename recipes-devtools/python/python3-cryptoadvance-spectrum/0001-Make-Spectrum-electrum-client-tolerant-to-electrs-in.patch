@@ -1,0 +1,287 @@
+From f774118a8223052f7d0d7ca82c8a1b9b41f12afb Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 11:03:24 +0100
+Subject: [PATCH 1/4] Make Spectrum/electrum client tolerant to electrs
+ indexing
+
+- Buffer and parse recv_loop safely exit on peer close
+- Harden ping loop against unexpected errors
+- Treat 'unavailable index' as transient and avoid startup abort
+- Add regression test for recv_loop close-without-newline
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/spectrum/elsock.py   | 96 ++++++++++++++++++--------
+ src/cryptoadvance/spectrum/spectrum.py | 33 +++++----
+ tests/test_elsock.py                   | 28 ++++++++
+ 3 files changed, 115 insertions(+), 42 deletions(-)
+
+diff --git a/src/cryptoadvance/spectrum/elsock.py b/src/cryptoadvance/spectrum/elsock.py
+index b9afe0a..42c7ddd 100644
+--- a/src/cryptoadvance/spectrum/elsock.py
++++ b/src/cryptoadvance/spectrum/elsock.py
+@@ -449,34 +449,43 @@ class ElectrumSocket:
+         None
+         """
+         sleep = self.sleep_recv_loop  # This probably heavily impacts the sync-time
++        buffer = b""
+         read_counter = 0
+         timeout_counter = 0
+         while self.running:
+             try:
+                 data = self._socket.recv(2048)
+                 read_counter += 1
+-            except TimeoutError:
+-                pass
+-                # This might happen quite often as we're using a non-blocking socket here.
+-                # And if no data is there to read from and the timeout is reached, we'll
+-                # get this error. However it's not a real error-condition (imho)
+-
+-                # As i'm not 100% sure about that stuff, i'll keep that code around to uncomment any time:
+-                # timeout_counter += 1
+-                # logger.error(
+-                #     f"Timeout in recv-loop, happens in {timeout_counter}/{read_counter} * 100 = {timeout_counter/read_counter * 100 }% of all reads. "
+-                # )
+-                # logger.error(f"consider to increase socket_timeout which is currently {self._socket_timeout}")
+-            while not data.endswith(b"\n"):  # b"\n" is the end of the message
+-                if not self.running:
+-                    break
+-                data += self._socket.recv(2048)
+-            # data looks like this:
+-            # b'{"jsonrpc": "2.0", "result": {"hex": "...", "height": 761086}, "id": 2210736436}\n'
+-            arr = [json.loads(d.decode()) for d in data.strip().split(b"\n") if d]
+-            # arr looks like this
+-            # [{'jsonrpc': '2.0', 'result': {'hex': '...', 'height': 761086}, 'id': 2210736436}]
+-            for response in arr:
++            except (socket.timeout, TimeoutError, BlockingIOError):
++                # Not an error condition: just no data available.
++                timeout_counter += 1
++                time.sleep(sleep)
++                continue
++            except OSError as e:
++                logger.error(f"Error in recv-loop: {e.__class__.__name__}: {e}")
++                return
++
++            # Peer closed the connection.
++            if not data:
++                logger.info("Socket closed by peer in recv-loop")
++                return
++
++            buffer += data
++            # Safety belt: if the server stops sending newlines, don't grow without bound.
++            if len(buffer) > 1024 * 1024:
++                logger.error("recv-loop buffer exceeded 1MiB without newline; treating as broken socket")
++                return
++
++            while b"\n" in buffer:
++                line, buffer = buffer.split(b"\n", 1)
++                if not line:
++                    continue
++                try:
++                    response = json.loads(line.decode())
++                except Exception as e:
++                    logger.error(f"Error decoding JSON from electrum server: {e}")
++                    continue
++
+                 if "method" in response:  # notification
+                     self._notifications.append(response)
+                 if "id" in response:  # request
+@@ -495,14 +504,12 @@ class ElectrumSocket:
+         None
+         """
+         tries = 0
+-        ts = self.ping()
+         while self.running:
+-            time.sleep(self.sleep_ping_loop)
+             try:
+                 self.ping()
+                 tries = 0
+-            except ElSockTimeoutException as e:
+-                tries = tries + 1
++            except ElSockTimeoutException:
++                tries += 1
+                 logger.error(
+                     f"Timeout in ping-loop ({tries}th time, next try in {self.sleep_ping_loop} seconds if threshold not met"
+                 )
+@@ -511,6 +518,17 @@ class ElectrumSocket:
+                         f"More than {self.tries_threshold} Ping failures for {self.tries_threshold * self.sleep_ping_loop} seconds, Giving up!"
+                     )
+                     return  # will end the thread
++            except Exception as e:
++                tries += 1
++                logger.error(
++                    f"Error in ping-loop ({tries}th time): {e.__class__.__name__}: {e}"
++                )
++                if tries > self.tries_threshold:
++                    logger.error(
++                        f"More than {self.tries_threshold} Ping failures for {self.tries_threshold * self.sleep_ping_loop} seconds, Giving up!"
++                    )
++                    return
++            time.sleep(self.sleep_ping_loop)
+ 
+     def _notify_loop(self):
+         while self.running:
+@@ -530,7 +548,7 @@ class ElectrumSocket:
+         else:
+             logger.debug("Notification:", data)
+ 
+-    def call(self, method, params=[]) -> dict:
++    def call(self, method, params=None) -> dict:
+         """
+         Calls a method on the Electrum server and returns the response.
+ 
+@@ -545,12 +563,26 @@ class ElectrumSocket:
+         might raise a ElSockTimeoutException if self._call_timeout is over
+ 
+         """
++        if params is None:
++            params = []
+         uid = random.randint(0, 1 << 32)
+         obj = {"jsonrpc": "2.0", "method": method, "params": params, "id": uid}
+         self._requests.append(obj)
+         start = time.time()
+ 
+         while uid not in self._results:  # wait for response
++            if not self.running:
++                raise ElSockTimeoutException(
++                    f"ElectrumSocket stopped while waiting for {method} on {self._socket}"
++                )
++            if self.is_socket_closed():
++                raise ElSockTimeoutException(
++                    f"Socket closed while waiting for {method} on {self._socket}"
++                )
++            if hasattr(self, "_recv_thread") and self._recv_thread and not self._recv_thread.is_alive():
++                raise ElSockTimeoutException(
++                    f"recv thread not alive while waiting for {method} on {self._socket}"
++                )
+             # time.sleep(1)
+             time.sleep(0.01)
+             if time.time() - start > self._call_timeout:
+@@ -559,7 +591,15 @@ class ElectrumSocket:
+                 )
+         res = self._results.pop(uid)
+         if "error" in res:
+-            raise ValueError(res["error"])
++            err = res["error"]
++            # electrs can respond with this while still indexing; treat as a transient condition
++            if isinstance(err, dict) and "message" in err and "unavailable index" in str(
++                err.get("message")
++            ):
++                raise ElSockTimeoutException(
++                    f"Electrum server temporarily unavailable for {method}: {err}"
++                )
++            raise ValueError(err)
+         if "result" in res:
+             return res["result"]
+ 
+diff --git a/src/cryptoadvance/spectrum/spectrum.py b/src/cryptoadvance/spectrum/spectrum.py
+index cf81a0f..4e9a974 100644
+--- a/src/cryptoadvance/spectrum/spectrum.py
++++ b/src/cryptoadvance/spectrum/spectrum.py
+@@ -128,16 +128,21 @@ class Spectrum:
+         # 143 - Testnet, 110 - Mainnet, 195 - Liquid
+         self.t0 = time.time()  # for uptime
+         if self.sock and self.sock.status == "ok":
+-            logger.info(f"Pinged electrum in {self.sock.ping()} ")
+-            logger.info("subscribe to block headers")
+-            res = self.sock.call("blockchain.headers.subscribe")
+-            self.blocks = res["height"]
+-            self.bestblockhash = get_blockhash(res["hex"])
+-            logger.info("detect chain from header")
+-            rootheader = self.sock.call("blockchain.block.header", [0])
+-            logger.info(f"Set roothash {self.roothash}")
+-            self.roothash = get_blockhash(rootheader)
+-            self.chain = ROOT_HASHES.get(self.roothash, "regtest")
++            try:
++                logger.info(f"Pinged electrum in {self.sock.ping()} ")
++                logger.info("subscribe to block headers")
++                res = self.sock.call("blockchain.headers.subscribe")
++                self.blocks = res["height"]
++                self.bestblockhash = get_blockhash(res["hex"])
++                logger.info("detect chain from header")
++                rootheader = self.sock.call("blockchain.block.header", [0])
++                logger.info(f"Set roothash {self.roothash}")
++                self.roothash = get_blockhash(rootheader)
++                self.chain = ROOT_HASHES.get(self.roothash, "regtest")
++            except Exception as e:
++                logger.info(
++                    f"Electrum not ready during startup (may still be indexing): {e}"
++                )
+ 
+     def stop(self):
+         logger.info("Stopping Spectrum")
+@@ -186,6 +191,7 @@ class Spectrum:
+                 logger.info("Syncprocess not starting, already running!")
+                 return
+             self._sync_in_progress = True
++            self.sync_speed = 0
+ 
+             subscription_logging_counter = 0
+             # subscribe to all scripts
+@@ -201,9 +207,8 @@ class Spectrum:
+                     continue
+                 subscription_logging_counter += 1
+                 if subscription_logging_counter % 100 == 0:
+-                    self.sync_speed = subscription_logging_counter / int(
+-                        (datetime.now() - ts).total_seconds()
+-                    )
++                    elapsed_s = max((datetime.now() - ts).total_seconds(), 0.001)
++                    self.sync_speed = subscription_logging_counter / elapsed_s
+                     self.progress_percent = int(
+                         subscription_logging_counter / all_scripts_len * 100
+                     )
+@@ -226,7 +231,7 @@ class Spectrum:
+             self.progress_percent = 100
+             ts_diff_s = int((datetime.now() - ts).total_seconds())
+             logger.info(
+-                f"Syncprocess finished syncing {all_scripts_len} scripts in {ts_diff_s} with {self.sync_speed} scripts/s)"
++                f"Syncprocess finished syncing {all_scripts_len} scripts in {ts_diff_s} with {getattr(self, 'sync_speed', 0)} scripts/s)"
+             )
+         except Exception as e:
+             logger.exception(e)
+diff --git a/tests/test_elsock.py b/tests/test_elsock.py
+index fe11f66..d484723 100644
+--- a/tests/test_elsock.py
++++ b/tests/test_elsock.py
+@@ -7,6 +7,7 @@ import pytest
+ from cryptoadvance.spectrum.elsock import ElectrumSocket, ElSockTimeoutException
+ import hashlib
+ import struct
++import threading
+ 
+ from cryptoadvance.spectrum.util import SpectrumException
+ 
+@@ -72,3 +73,30 @@ def test_elsock_thread_status():
+     assert es.thread_status["not_all_alive"] == False
+     assert es.thread_status["alive"] == ["recv", "write", "ping", "notify"]
+     assert es.thread_status["not_alive"] == []
++
++
++def test_recv_loop_exits_on_peer_close_without_newline():
++    class FakeSocket:
++        def __init__(self, chunks):
++            self._chunks = list(chunks)
++
++        def recv(self, n):
++            if self._chunks:
++                return self._chunks.pop(0)
++            return b""
++
++        def fileno(self):
++            return 1
++
++    es = ElectrumSocket.__new__(ElectrumSocket)
++    es.running = True
++    es.sleep_recv_loop = 0
++    es._socket = FakeSocket([b"{\"jsonrpc\":\"2.0\"", b""])
++    es._notifications = []
++    es._results = {}
++
++    thread = threading.Thread(target=es.recv_loop, daemon=True)
++    thread.start()
++    thread.join(timeout=1)
++
++    assert not thread.is_alive(), "recv_loop should exit when socket closes"
+-- 
+2.43.0
+

@@ -1,0 +1,110 @@
+From 40a9619dd9634a9b028db9696b7ca773f46a3011 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 15:29:59 +0100
+Subject: [PATCH 5/5] add possibilty to skip migration
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ .../specter/util/specter_migrator.py          | 58 +++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+diff --git a/src/cryptoadvance/specter/util/specter_migrator.py b/src/cryptoadvance/specter/util/specter_migrator.py
+index 03d1ca07..e2a85990 100644
+--- a/src/cryptoadvance/specter/util/specter_migrator.py
++++ b/src/cryptoadvance/specter/util/specter_migrator.py
+@@ -15,6 +15,7 @@ from importlib import import_module
+ from inspect import isclass
+ from pathlib import Path
+ from pkgutil import iter_modules
++from typing import Optional, Set
+ 
+ from cryptoadvance import specter
+ 
+@@ -25,6 +26,47 @@ from .version import VersionChecker, compare
+ logger = logging.getLogger(__name__)
+ 
+ 
++def _get_bool_env_var(name: str, default: bool = False) -> bool:
++    value = os.environ.get(name)
++    if value is None:
++        return default
++    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
++
++
++def _parse_migration_id_token(token: str) -> Optional[int]:
++    token = token.strip()
++    if not token:
++        return None
++    if token.isdigit():
++        return int(token)
++    # Allow forms like "SpecterMigration_0002" or "SpecterMigration_2"
++    if token.startswith("SpecterMigration_"):
++        try:
++            return int(token.split("_", 1)[1])
++        except Exception:
++            return None
++    return None
++
++
++def _get_skipped_migration_ids() -> Set[int]:
++    """Reads `SPECTER_MIGRATIONS_SKIP` env var.
++
++    Supported formats:
++    - "2" or "2,3" or "2 3"
++    - "SpecterMigration_0002,SpecterMigration_0010"
++    """
++    raw = os.environ.get("SPECTER_MIGRATIONS_SKIP", "")
++    if not raw:
++        return set()
++    tokens = raw.replace(";", ",").replace(" ", ",").split(",")
++    ids: Set[int] = set()
++    for token in tokens:
++        migration_id = _parse_migration_id_token(token)
++        if migration_id is not None:
++            ids.add(migration_id)
++    return ids
++
++
+ class SpecterMigration:
+     """All Migrations should derive from this class. In order to create one, have a look at
+     the example in the migrations directory.
+@@ -101,6 +143,12 @@ class SpecterMigrator:
+         """Returns a list of instances from all the migration_1234-classes which hasn't been
+         executed yet (according to migration_data.json)
+         """
++        if _get_bool_env_var("SPECTER_DISABLE_MIGRATIONS", default=False):
++            logger.warning(
++                "Migrations are disabled via SPECTER_DISABLE_MIGRATIONS; skipping planning."
++            )
++            return []
++        skipped_ids = _get_skipped_migration_ids()
+         migration_objects_list = []
+         # The path where all the migrations are located:
+         package_dir = str(Path(Path(__file__).resolve().parent, "migrations").resolve())
+@@ -108,6 +156,11 @@ class SpecterMigrator:
+             migration_obj = migration_class(self)
+ 
+             migration_id = SpecterMigrator.calculate_id(migration_obj)
++            if migration_id in skipped_ids:
++                logger.warning(
++                    f"Skipping migration id {migration_id} due to SPECTER_MIGRATIONS_SKIP"
++                )
++                continue
+             if not self.mig.has_migration_executed(migration_id):
+                 if migration_obj.should_execute():
+                     logger.debug(
+@@ -121,6 +174,11 @@ class SpecterMigrator:
+         return migration_objects_list
+ 
+     def execute_migrations(self, migration_object_list=None):
++        if _get_bool_env_var("SPECTER_DISABLE_MIGRATIONS", default=False):
++            logger.warning(
++                "Migrations are disabled via SPECTER_DISABLE_MIGRATIONS; skipping execution."
++            )
++            return
+         if migration_object_list == None:
+             migration_object_list = self.plan_migration()
+         if not migration_object_list:
+-- 
+2.43.0
+

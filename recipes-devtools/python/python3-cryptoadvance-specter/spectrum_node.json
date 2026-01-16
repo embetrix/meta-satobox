@@ -4,5 +4,6 @@
   "alias": "spectrum_node",
   "host": "127.0.0.1",
   "port": 50001,
+  "chain": "signet",
   "ssl": false
 }

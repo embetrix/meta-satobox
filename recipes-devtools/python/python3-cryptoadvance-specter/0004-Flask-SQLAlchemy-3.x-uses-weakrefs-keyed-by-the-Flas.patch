@@ -1,0 +1,28 @@
+From f0bf7e70b90d4f909b3b0519dbd4bab5d23366fd Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 10:20:47 +0100
+Subject: [PATCH 4/5] Flask-SQLAlchemy 3.x uses weakrefs keyed by the Flask app
+ object. Spectrum uses  as a LocalProxy; convert to the underlying Flask
+ instance
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/specterext/spectrum/service.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/cryptoadvance/specterext/spectrum/service.py b/src/cryptoadvance/specterext/spectrum/service.py
+index ea7c03f7..0f76659c 100644
+--- a/src/cryptoadvance/specterext/spectrum/service.py
++++ b/src/cryptoadvance/specterext/spectrum/service.py
+@@ -78,7 +78,7 @@ class SpectrumService(Service):
+         logger.info(
+             f"Intitializing Database in {app.config['SQLALCHEMY_DATABASE_URI']}"
+         )
+-        db.init_app(app)
++        db.init_app(app._get_current_object() if hasattr(app, '_get_current_object') else app)
+         db.create_all()
+         # Check whether there is a Spectrum node in the node manager of Specter
+         if self.is_spectrum_node_available:
+-- 
+2.43.0
+

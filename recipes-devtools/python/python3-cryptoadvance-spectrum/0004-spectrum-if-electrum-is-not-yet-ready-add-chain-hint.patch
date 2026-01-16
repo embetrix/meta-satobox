@@ -1,0 +1,246 @@
+From 4dab9941963fe5b6787e1aad5893ddaf5ea93363 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 15:20:25 +0100
+Subject: [PATCH 4/4] spectrum: if electrum is not yet ready add chain hint to
+ not fallback to regtest
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/spectrum/spectrum.py | 99 ++++++++++++++++++++++----
+ tests/test_spectrum.py                 | 55 ++++++++++++++
+ 2 files changed, 142 insertions(+), 12 deletions(-)
+
+diff --git a/src/cryptoadvance/spectrum/spectrum.py b/src/cryptoadvance/spectrum/spectrum.py
+index c9a7c29..d756c02 100644
+--- a/src/cryptoadvance/spectrum/spectrum.py
++++ b/src/cryptoadvance/spectrum/spectrum.py
+@@ -93,16 +93,40 @@ class Spectrum:
+         datadir="data",
+         app=None,
+         proxy_url=None,
++        chain_hint=None,
+     ):
+         self.app = app
+         self.host = host
+         self.port = port
+         self.ssl = ssl
+         self.proxy_url = proxy_url
++        # Ensure the attribute exists even if init fails early.
++        self.sock = None
+         assert type(ssl) == bool, f"ssl is of type {type(ssl)}"
+         self.datadir = datadir
+         self._chain_detection_lock = threading.Lock()
+         self._last_chain_detection_attempt_ts = 0.0
++
++        # Optional: let operators provide a chain hint for cases where electrs is
++        # temporarily unresponsive (commonly during initial indexing). This avoids
++        # misleading defaults (historically "regtest").
++        if chain_hint is None:
++            # Prefer Specter node JSON (e.g. /var/specter/nodes/spectrum_node.json)
++            # so operators can set the network in one place.
++            specter_data_folder = os.environ.get("SPECTER_DATA_FOLDER", "/var/specter")
++            default_node_json_path = os.path.join(
++                specter_data_folder, "nodes", "spectrum_node.json"
++            )
++            node_json_path = os.environ.get("SPECTRUM_NODE_JSON", default_node_json_path)
++            chain_hint = self._chain_hint_from_node_json(node_json_path)
++        if chain_hint is None:
++            # Backwards-compatible fallback
++            chain_hint = os.environ.get("SPECTRUM_CHAIN_HINT")
++        if isinstance(chain_hint, str):
++            normalized = chain_hint.strip().lower()
++            if normalized in {"main", "test", "regtest", "signet"}:
++                self.chain = normalized
++                logger.info(f"Using chain hint: {self.chain}")
+         if not os.path.exists(self.txdir):
+             logger.info(f"Creating txdir {self.txdir} ")
+             os.makedirs(self.txdir)
+@@ -117,7 +141,6 @@ class Spectrum:
+             proxy_url=proxy_url,
+         )
+ 
+-        # self.sock = ElectrumSocket(host="35.201.74.156", port=143, callback=self.process_notification)
+         # 143 - Testnet, 110 - Mainnet, 195 - Liquid
+         self.t0 = time.time()  # for uptime
+         if self.sock and self.sock.status == "ok":
+@@ -131,6 +154,34 @@ class Spectrum:
+             except Exception as e:
+                 logger.error(f"Electrum not ready during startup: {e}")
+ 
++    @staticmethod
++    def _chain_hint_from_node_json(path: str):
++        """Return a chain hint from a Specter node JSON file.
++
++        Expected keys (case-insensitive): network/chain.
++        Example spectrum_node.json:
++            {"host":"127.0.0.1","port":50001,"ssl":false,"network":"main"}
++        """
++        if not path:
++            return None
++        try:
++            if not os.path.exists(path):
++                return None
++            with open(path, "r", encoding="utf-8") as f:
++                data = json.load(f)
++            if not isinstance(data, dict):
++                return None
++
++            for key in ("network", "chain"):
++                val = data.get(key)
++                if isinstance(val, str):
++                    normalized = val.strip().lower()
++                    if normalized in {"main", "test", "regtest", "signet"}:
++                        return normalized
++            return None
++        except Exception:
++            return None
++
+     def _maybe_detect_chain(self, force: bool = False) -> None:
+         """Best-effort chain detection.
+ 
+@@ -138,7 +189,13 @@ class Spectrum:
+         In that case we must not permanently stick to the default (regtest);
+         instead we retry later on demand.
+         """
+-        if not force and self.roothash:
++        # Only skip detection when we already have a *confirmed* chain.
++        # Historically `chain` defaulted to "regtest". If early detection failed,
++        # Spectrum could stay stuck on regtest even on mainnet.
++        regtest_genesis = "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"
++        if not force and self.roothash and not (
++            self.chain == "regtest" and self.roothash != regtest_genesis
++        ):
+             return
+         if not self.sock or self.sock.status != "ok":
+             return
+@@ -154,16 +211,33 @@ class Spectrum:
+                 return
+             self._last_chain_detection_attempt_ts = now
+ 
++            def _extract_known_genesis_hash(features_obj):
++                """Return a known genesis hash from a server.features payload."""
++                if not isinstance(features_obj, (dict, list)):
++                    return None
++                stack = [features_obj]
++                while stack:
++                    cur = stack.pop()
++                    if isinstance(cur, dict):
++                        # common key names
++                        for key in ("genesis_hash", "genesisHash"):
++                            val = cur.get(key)
++                            if isinstance(val, str) and val in ROOT_HASHES:
++                                return val
++                        stack.extend(cur.values())
++                    elif isinstance(cur, list):
++                        stack.extend(cur)
++                return None
++
+             try:
+                 features = self.sock.call("server.features")
+-                genesis_hash = None
+-                if isinstance(features, dict):
+-                    genesis_hash = features.get("genesis_hash")
+-                if isinstance(genesis_hash, str) and len(genesis_hash) == 64:
+-                    chain = ROOT_HASHES.get(genesis_hash, "regtest")
++                genesis_hash = _extract_known_genesis_hash(features)
++                if genesis_hash is not None:
+                     self.roothash = genesis_hash
+-                    self.chain = chain
+-                    logger.info(f"Detected chain={self.chain} from server.features")
++                    self.chain = ROOT_HASHES[genesis_hash]
++                    logger.info(
++                        f"Detected chain={self.chain} from server.features (genesis_hash={genesis_hash})"
++                    )
+                     return
+             except Exception:
+                 # Fallback to header-based detection below.
+@@ -179,16 +253,17 @@ class Spectrum:
+ 
+     def stop(self):
+         logger.info("Stopping Spectrum")
+-        self.sock.shutdown()
++        if self.sock is not None:
++            self.sock.shutdown()
+ 
+     def is_connected(self) -> bool:
+         """Returns True if there is a socket connection, False otherwise."""
+-        return self.sock.status == "ok"
++        return self.sock is not None and self.sock.status == "ok"
+ 
+     @property
+     def uses_tor(self):
+         """Whether the underlying ElectrumSocket uses Tor"""
+-        return self.sock.uses_tor
++        return self.sock.uses_tor if self.sock is not None else False
+ 
+     @property
+     def txdir(self):
+diff --git a/tests/test_spectrum.py b/tests/test_spectrum.py
+index e874906..3dce116 100644
+--- a/tests/test_spectrum.py
++++ b/tests/test_spectrum.py
+@@ -37,6 +37,61 @@ def test_chain_detection_uses_server_features_genesis_hash():
+     assert spectrum.chain == "main"
+     assert spectrum.roothash == "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+ 
++
++def test_chain_hint_does_not_prevent_detection():
++    spectrum = Spectrum.__new__(Spectrum)
++    spectrum.roothash = ""
++    spectrum.chain = "main"  # operator hint
++    spectrum._chain_detection_lock = threading.Lock()
++    spectrum._last_chain_detection_attempt_ts = 0.0
++
++    sock = MagicMock()
++    sock.status = "ok"
++
++    def fake_call(method, params=None):
++        if method == "server.features":
++            return {
++                "genesis_hash": "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
++            }
++        raise AssertionError(f"Unexpected electrum call: {method}")
++
++    sock.call = fake_call
++    spectrum.sock = sock
++
++    spectrum._maybe_detect_chain(force=True)
++    assert spectrum.chain == "test"
++
++
++def test_chain_detection_retries_if_regtest_is_only_fallback():
++    spectrum = Spectrum.__new__(Spectrum)
++    # Simulate a previous failed/unknown detection that left us on the default
++    spectrum.roothash = "deadbeef" * 8
++    spectrum.chain = "regtest"
++    spectrum._chain_detection_lock = threading.Lock()
++    spectrum._last_chain_detection_attempt_ts = 0.0
++
++    sock = MagicMock()
++    sock.status = "ok"
++
++    def fake_call(method, params=None):
++        if method == "server.features":
++            return {
++                "genesis_hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
++            }
++        raise AssertionError(f"Unexpected electrum call: {method}")
++
++    sock.call = fake_call
++    spectrum.sock = sock
++
++    spectrum._maybe_detect_chain(force=False)
++    assert spectrum.chain == "main"
++
++
++def test_chain_hint_parsed_from_node_json(tmp_path):
++    node_json = tmp_path / "spectrum_node.json"
++    node_json.write_text('{"host":"127.0.0.1","port":50001,"ssl":false,"network":"main"}', encoding="utf-8")
++    assert Spectrum._chain_hint_from_node_json(str(node_json)) == "main"
++
+ def test_importdescriptor(app: Flask, rootkey_hold_accident, acc0key0addr_hold_accident):
+     ''' THis does:
+         * Creating a wallet
+-- 
+2.43.0
+

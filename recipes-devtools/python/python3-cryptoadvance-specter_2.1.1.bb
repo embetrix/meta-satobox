@@ -9,6 +9,11 @@ SRC_URI[md5sum] = "dc3675e5629d9ccec58b2968484fdcb6"
 SRC_URI[sha256sum] = "9b42ae5ccb34f9ebfeb0ef4cc1824f919cb10f5071891b54d1a204cb6b9f0f36"
 
 SRC_URI += "\
+    file://0001-ELECTRUM_DEFAULT_OPTION-switch-to-local-electrum-ser.patch \
+    file://0002-Fix-for-Python-3.12-random.randint-no-longer-accepts.patch \
+    file://0003-disable-some-optional-extensions-if-it-s-not-package.patch \
+    file://0004-Flask-SQLAlchemy-3.x-uses-weakrefs-keyed-by-the-Flas.patch \
+    file://0005-add-possibilty-to-skip-migration.patch \
     file://config.json \
     file://bitcoin_node.json \
     file://spectrum_node.json \
@@ -84,22 +89,6 @@ inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "specter.service"
 SYSTEMD_PACKAGES = "${PN}"
 
-do_configure:prepend() {
-    # Fix for Python 3.12: random.randint() no longer accepts floats.
-    # We patch this after unpacking source code, but before building.
-    # https://github.com/cryptoadvance/specter-desktop/issues/2453
-    grep -rl "1e32" ${S}/src/cryptoadvance/specter | xargs -r sed -i 's/1e32/int(1e32)/g'
-
-    # stacktrack is an optional extension; if it's not packaged, Specter should still start
-    sed -i '/cryptoadvance\.specterext\.stacktrack\.service/d' \
-        ${S}/src/cryptoadvance/specter/config.py
-
-    # Flask-SQLAlchemy 3.x uses weakrefs keyed by the Flask app object.
-    # Spectrum uses `app` as a LocalProxy; convert to the underlying Flask instance.
-    sed -i "s/db\.init_app(app)/db.init_app(app._get_current_object() if hasattr(app, '_get_current_object') else app)/" \
-        ${S}/src/cryptoadvance/specterext/spectrum/service.py
-}
-
 do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         install -d ${D}${systemd_system_unitdir}
@@ -131,6 +120,8 @@ do_install:append() {
             ${D}${localstatedir}/specter/nodes/bitcoin_node.json
         sed -i 's|"name": "Bitcoin Node (signet)"|"name": "Bitcoin Node"|' \
             ${D}${localstatedir}/specter/nodes/bitcoin_node.json
+        sed -i 's|"chain": "signet"|"chain": "main"|' \
+            ${D}${localstatedir}/specter/nodes/spectrum_node.json
     fi
 
     install -d ${D}${sysconfdir}/specter

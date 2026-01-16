@@ -1,0 +1,37 @@
+From d38da1cdd50d3ecd8d1f958d216ebdfed2a3288b Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 10:01:08 +0100
+Subject: [PATCH 1/5] ELECTRUM_DEFAULT_OPTION: switch to local electrum server
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ .gitignore                                      | 1 +
+ src/cryptoadvance/specterext/spectrum/config.py | 9 ++-------
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/src/cryptoadvance/specterext/spectrum/config.py b/src/cryptoadvance/specterext/spectrum/config.py
+index af70280d..c8d1f029 100644
+--- a/src/cryptoadvance/specterext/spectrum/config.py
++++ b/src/cryptoadvance/specterext/spectrum/config.py
+@@ -25,16 +25,11 @@ class BaseConfig(object):
+ 
+     # The prepopulated options
+     ELECTRUM_OPTIONS = {
+-        "electrum.emzy.de": {"host": "electrum.emzy.de", "port": 50002, "ssl": True},
+-        "electrum.blockstream.info": {
+-            "host": "electrum.blockstream.info",
+-            "port": 50002,
+-            "ssl": True,
+-        },
++        "electrum": {"host": "127.0.0.1", "port": 50001, "ssl": False}
+     }
+ 
+     # The one which is chosen at startup
+-    ELECTRUM_DEFAULT_OPTION = "electrum.emzy.de"
++    ELECTRUM_DEFAULT_OPTION = "electrum"
+ 
+     SUPPRESS_JSONRPC_LOGGING = _get_bool_env_var(
+         "SUPPRESS_JSONRPC_LOGGING", default="false"
+-- 
+2.43.0
+

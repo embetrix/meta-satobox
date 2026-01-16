@@ -1,0 +1,88 @@
+From 1411e4b6227972043200e1e430e8a38d17fe6db8 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 12:04:02 +0100
+Subject: [PATCH 2/4] spectrum: provide stable RPCError import path
+
+- Add cryptoadvance.spectrum.spectrum_error with canonical RPCError
+- Re-export RPCError from cryptoadvance.spectrum and import it from spectrum.py
+	to avoid missing-module crashes in Specter extension imports
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/spectrum/__init__.py       |  4 ++++
+ src/cryptoadvance/spectrum/spectrum.py       | 16 ++--------------
+ src/cryptoadvance/spectrum/spectrum_error.py | 12 ++++++++++++
+ 3 files changed, 18 insertions(+), 14 deletions(-)
+ create mode 100644 src/cryptoadvance/spectrum/spectrum_error.py
+
+diff --git a/src/cryptoadvance/spectrum/__init__.py b/src/cryptoadvance/spectrum/__init__.py
+index e69de29..cd6a709 100644
+--- a/src/cryptoadvance/spectrum/__init__.py
++++ b/src/cryptoadvance/spectrum/__init__.py
+@@ -0,0 +1,4 @@
++
++from .spectrum_error import RPCError
++
++__all__ = ["RPCError"]
+diff --git a/src/cryptoadvance/spectrum/spectrum.py b/src/cryptoadvance/spectrum/spectrum.py
+index 4e9a974..c275f47 100644
+--- a/src/cryptoadvance/spectrum/spectrum.py
++++ b/src/cryptoadvance/spectrum/spectrum.py
+@@ -25,6 +25,7 @@ from sqlalchemy.sql import func
+ 
+ from .db import UTXO, Descriptor, Script, Tx, TxCategory, Wallet, db
+ from .elsock import ElectrumSocket, ElSockTimeoutException
++from .spectrum_error import RPCError
+ from .util import (
+     FlaskThread,
+     SpectrumException,
+@@ -68,17 +69,6 @@ def walletrpc(f):
+     return wrapper
+ 
+ 
+-class RPCError(Exception):
+-    """Should use one of : https://github.com/bitcoin/bitcoin/blob/v22.0/src/rpc/protocol.h#L25-L88"""
+-
+-    def __init__(self, message, code=-1):  # -1 is RPC_MISC_ERROR
+-        self.message = message
+-        self.code = code
+-
+-    def to_dict(self):
+-        return {"code": self.code, "message": self.message}
+-
+-
+ # we detect chain by looking at the hash of the 0th block
+ ROOT_HASHES = {
+     "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f": "main",
+@@ -140,9 +130,7 @@ class Spectrum:
+                 self.roothash = get_blockhash(rootheader)
+                 self.chain = ROOT_HASHES.get(self.roothash, "regtest")
+             except Exception as e:
+-                logger.info(
+-                    f"Electrum not ready during startup (may still be indexing): {e}"
+-                )
++                logger.error(f"Electrum not ready during startup: {e}")
+ 
+     def stop(self):
+         logger.info("Stopping Spectrum")
+diff --git a/src/cryptoadvance/spectrum/spectrum_error.py b/src/cryptoadvance/spectrum/spectrum_error.py
+new file mode 100644
+index 0000000..acfada1
+--- /dev/null
++++ b/src/cryptoadvance/spectrum/spectrum_error.py
+@@ -0,0 +1,12 @@
++class RPCError(Exception):
++    """Should use one of : https://github.com/bitcoin/bitcoin/blob/v22.0/src/rpc/protocol.h#L25-L88"""
++
++    def __init__(self, message, code=-1):  # -1 is RPC_MISC_ERROR
++        self.message = message
++        self.code = code
++
++    def to_dict(self):
++        return {"code": self.code, "message": self.message}
++
++
++__all__ = ["RPCError"]
+-- 
+2.43.0
+

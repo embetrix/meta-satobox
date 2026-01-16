@@ -10,19 +10,15 @@ SRC_URI[sha256sum] = "fa6c877b3a5ba683ccde991f020fce2f3b06e0b8f5219a6fdc592658ca
 
 S = "${WORKDIR}/cryptoadvance.spectrum-0.6.4"
 
-DEPENDS += "python3-setuptools-native python3-native"
 
-do_configure:prepend() {
-    # Fix: Create spectrum_error.py module (re-export RPCError for backwards compatibility)
-    cat > ${S}/src/cryptoadvance/spectrum/spectrum_error.py << 'EOF'
-from .spectrum import RPCError
-__all__ = ['RPCError']
-EOF
-    
-    # Fix random.randint(0, 1e32) for Python 3.12
-    # https://github.com/cryptoadvance/specter-desktop/issues/2453
-    sed -i 's/1e32/int(1e32)/g' ${S}/src/cryptoadvance/spectrum/server.py || true
-}
+SRC_URI += "\
+    file://0001-Make-Spectrum-electrum-client-tolerant-to-electrs-in.patch \
+    file://0002-spectrum-provide-stable-RPCError-import-path.patch \
+    file://0003-spectrum-avoid-false-regtest-detection-on-mainnet-el.patch \
+    file://0004-spectrum-if-electrum-is-not-yet-ready-add-chain-hint.patch \
+"
+
+DEPENDS += "python3-setuptools-native python3-native"
 
 RDEPENDS:${PN} += " \
     python3-core \

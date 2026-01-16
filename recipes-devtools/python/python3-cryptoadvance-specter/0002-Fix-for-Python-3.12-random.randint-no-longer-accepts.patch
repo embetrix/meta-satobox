@@ -1,0 +1,139 @@
+From 50d9e7cf01a54bb76d008f00487877136b880477 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Fri, 16 Jan 2026 10:16:54 +0100
+Subject: [PATCH 2/5] Fix for Python 3.12: random.randint() no longer accepts
+ floats
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/specter/hwi_server.py                       | 2 +-
+ src/cryptoadvance/specter/server_endpoints/auth.py            | 2 +-
+ src/cryptoadvance/specter/server_endpoints/controller.py      | 2 +-
+ src/cryptoadvance/specter/server_endpoints/devices.py         | 2 +-
+ src/cryptoadvance/specter/server_endpoints/nodes.py           | 2 +-
+ src/cryptoadvance/specter/server_endpoints/settings.py        | 2 +-
+ src/cryptoadvance/specter/server_endpoints/setup.py           | 2 +-
+ src/cryptoadvance/specter/server_endpoints/wallets/wallets.py | 2 +-
+ src/cryptoadvance/specter/server_endpoints/welcome/welcome.py | 2 +-
+ 9 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/cryptoadvance/specter/hwi_server.py b/src/cryptoadvance/specter/hwi_server.py
+index 18aaf6b2..59f0e23f 100644
+--- a/src/cryptoadvance/specter/hwi_server.py
++++ b/src/cryptoadvance/specter/hwi_server.py
+@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
+ 
+ hwi_server = Blueprint("hwi_server", __name__)
+ CORS(hwi_server)
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ 
+ @hwi_server.route("/", methods=["GET"])
+diff --git a/src/cryptoadvance/specter/server_endpoints/auth.py b/src/cryptoadvance/specter/server_endpoints/auth.py
+index 5ec57c2d..b94139df 100644
+--- a/src/cryptoadvance/specter/server_endpoints/auth.py
++++ b/src/cryptoadvance/specter/server_endpoints/auth.py
+@@ -16,7 +16,7 @@ from ..services import ExtensionException
+ from ..user import User, hash_password, verify_password
+ from ..rpc import BitcoinRPC, _detect_rpc_confs_via_datadir
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ last_sensitive_request = 0  # to rate limit sensitive requests
+ 
+ # Setup endpoint blueprint
+diff --git a/src/cryptoadvance/specter/server_endpoints/controller.py b/src/cryptoadvance/specter/server_endpoints/controller.py
+index 1c3ebbc0..881c7259 100644
+--- a/src/cryptoadvance/specter/server_endpoints/controller.py
++++ b/src/cryptoadvance/specter/server_endpoints/controller.py
+@@ -58,7 +58,7 @@ app.register_blueprint(setup_endpoint, url_prefix=f"{spc_prefix}/setup")
+ app.register_blueprint(wallets_endpoint, url_prefix=f"{spc_prefix}/wallets")
+ app.register_blueprint(wallets_endpoint_api, url_prefix=f"{spc_prefix}/wallets")
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ logger = logging.getLogger(__name__)
+ 
+ ########## exception handlers ##############
+diff --git a/src/cryptoadvance/specter/server_endpoints/devices.py b/src/cryptoadvance/specter/server_endpoints/devices.py
+index 0294f97f..42187b5d 100644
+--- a/src/cryptoadvance/specter/server_endpoints/devices.py
++++ b/src/cryptoadvance/specter/server_endpoints/devices.py
+@@ -26,7 +26,7 @@ from ..wallet import purposes
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ logger = logging.getLogger(__name__)
+ 
+ # Setup endpoint blueprint
+diff --git a/src/cryptoadvance/specter/server_endpoints/nodes.py b/src/cryptoadvance/specter/server_endpoints/nodes.py
+index 671d8939..3470221c 100644
+--- a/src/cryptoadvance/specter/server_endpoints/nodes.py
++++ b/src/cryptoadvance/specter/server_endpoints/nodes.py
+@@ -24,7 +24,7 @@ from ..server_endpoints import flash
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ # Setup endpoint blueprint
+ nodes_endpoint = Blueprint("nodes_endpoint", __name__)
+diff --git a/src/cryptoadvance/specter/server_endpoints/settings.py b/src/cryptoadvance/specter/server_endpoints/settings.py
+index 14f9961c..cd38935e 100644
+--- a/src/cryptoadvance/specter/server_endpoints/settings.py
++++ b/src/cryptoadvance/specter/server_endpoints/settings.py
+@@ -38,7 +38,7 @@ from ..util.tor import start_hidden_service, stop_hidden_services
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ # Setup endpoint blueprint
+ settings_endpoint = Blueprint("settings_endpoint", __name__)
+diff --git a/src/cryptoadvance/specter/server_endpoints/setup.py b/src/cryptoadvance/specter/server_endpoints/setup.py
+index e887cce2..eb5cb111 100644
+--- a/src/cryptoadvance/specter/server_endpoints/setup.py
++++ b/src/cryptoadvance/specter/server_endpoints/setup.py
+@@ -23,7 +23,7 @@ from ..util.tor_setup_tasks import setup_tor_thread
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ # Setup endpoint blueprint
+ setup_endpoint = Blueprint("setup_endpoint", __name__)
+diff --git a/src/cryptoadvance/specter/server_endpoints/wallets/wallets.py b/src/cryptoadvance/specter/server_endpoints/wallets/wallets.py
+index e39e79a3..7afcaaef 100644
+--- a/src/cryptoadvance/specter/server_endpoints/wallets/wallets.py
++++ b/src/cryptoadvance/specter/server_endpoints/wallets/wallets.py
+@@ -31,7 +31,7 @@ from .wallets_vm import WalletsOverviewVm
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ # Setup endpoint blueprint
+ wallets_endpoint = Blueprint("wallets_endpoint", __name__)
+diff --git a/src/cryptoadvance/specter/server_endpoints/welcome/welcome.py b/src/cryptoadvance/specter/server_endpoints/welcome/welcome.py
+index 41442ede..c1c95beb 100644
+--- a/src/cryptoadvance/specter/server_endpoints/welcome/welcome.py
++++ b/src/cryptoadvance/specter/server_endpoints/welcome/welcome.py
+@@ -17,7 +17,7 @@ from .welcome_vm import WelcomeVm
+ 
+ logger = logging.getLogger(__name__)
+ 
+-rand = random.randint(0, 1e32)  # to force style refresh
++rand = random.randint(0, int(1e32))  # to force style refresh
+ 
+ # Setup endpoint blueprint
+ welcome_endpoint = Blueprint("welcome_endpoint", __name__)
+-- 
+2.43.0
+
