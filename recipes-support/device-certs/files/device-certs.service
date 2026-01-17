@@ -1,15 +1,13 @@
 [Unit]
 Description=device certs server service
-After=network-online.target
-Wants=network-online.target
+Wants=network-online.target systemd-time-wait-sync.service
+After=network-online.target systemd-time-wait-sync.service
 Before=nginx.service
 Wants=nginx.service
 
 [Service]
-Type=oneshot
 WorkingDirectory=/etc/certs
 ExecStart=/usr/bin/device-certs
-RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
