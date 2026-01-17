@@ -11,49 +11,21 @@ server {
 
     server_name _;
 
-    # Canonicalize to trailing slash so relative URLs work
-    location = /specter {
-        return 301 /specter/;
-    }
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets on;
 
-    # Specter uses some absolute URLs (not under /specter/), e.g. /hwi/api/
-    location /hwi/ {
-        proxy_pass http://127.0.0.1:25441;
-
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Prefix /specter;
-    }
-
-    # Some frontend calls may hit /api/ directly
-    location /api/ {
-        proxy_pass http://127.0.0.1:25441;
-
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Prefix /specter;
-    }
+    keepalive_timeout 75s;
+    keepalive_requests 10000;
+    
+    location = /specter { return 301 /specter/; }
 
     location /specter/ {
-        # Minimal fix: translate /specter/api/... -> /api/... for the backend
-        rewrite ^/specter/api(/.*)$ /api$1 break;
-        proxy_pass http://127.0.0.1:25441/;
-        
-        # Important headers for proxy awareness
+        proxy_pass http://127.0.0.1:25441;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Prefix /specter;
-        
-        # WebSocket support (if Specter uses it)
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        
     }
 }
