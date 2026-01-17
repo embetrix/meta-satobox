@@ -2,8 +2,6 @@
 Description=device certs server service
 Wants=network-online.target systemd-time-wait-sync.service
 After=network-online.target systemd-time-wait-sync.service
-Before=nginx.service
-Wants=nginx.service
 
 [Service]
 WorkingDirectory=/etc/certs
