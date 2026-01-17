@@ -1,5 +1,7 @@
 [Unit]
 Description=Bitcoin core daemon service
+Wants=network-online.target systemd-time-wait-sync.service
+After=network-online.target systemd-time-wait-sync.service
 
 [Service]
 Type=notify
