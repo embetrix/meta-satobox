@@ -1,0 +1,125 @@
+From e5158af05eba57a6a5676e8a11a1c91e5c8e1952 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Sat, 17 Jan 2026 20:45:40 +0100
+Subject: [PATCH] persistence: atomic+fsync JSON writes
+
+Write JSON via temp file + fsync + os.replace (and dir fsync) to avoid empty/corrupt config.json after reboot/power loss.
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/specter/persistence.py | 85 ++++++++++++++++++------
+ 1 file changed, 65 insertions(+), 20 deletions(-)
+
+diff --git a/src/cryptoadvance/specter/persistence.py b/src/cryptoadvance/specter/persistence.py
+index d6aab988..ed1cc115 100644
+--- a/src/cryptoadvance/specter/persistence.py
++++ b/src/cryptoadvance/specter/persistence.py
+@@ -8,6 +8,7 @@ import json
+ import logging
+ import os
+ import shutil
++import tempfile
+ import threading
+ 
+ 
+@@ -129,33 +130,77 @@ def _write_json_file(content, path, lock=None):
+     if lock is None:
+         lock = fslock
+     with lock:
+-        # backup file
++        def _fsync_dir(dir_path: str):
++            try:
++                dir_fd = os.open(dir_path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
++            except Exception:
++                return
++            try:
++                os.fsync(dir_fd)
++            except Exception:
++                pass
++            finally:
++                os.close(dir_fd)
++
+         bkp = path + ".bkp"
+-        # check if file exists
+-        if os.path.isfile(path):
+-            # check if backup exists
+-            if os.path.isfile(bkp):
+-                # remove backup file
+-                os.remove(bkp)
+-            # move file to backup
+-            os.rename(path, bkp)
++        dir_path = os.path.dirname(path) or "."
++
+         try:
+-            with open(path, "w") as f:
+-                json.dump(content, f, indent=4)
++            existing_stat = os.stat(path) if os.path.exists(path) else None
+ 
+-            # check if write was sucessful
+-            with open(path, "r") as f:
+-                c = json.load(f)
++            # Write the new JSON content into a temp file in the same directory
++            # so the final replace is atomic on the same filesystem.
++            tmp_fd, tmp_path = tempfile.mkstemp(
++                prefix=os.path.basename(path) + ".tmp.", dir=dir_path
++            )
++            try:
++                with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
++                    json.dump(content, f, indent=4)
++                    f.flush()
++                    os.fsync(f.fileno())
++
++                # Preserve basic permissions/ownership if the file already existed.
++                if existing_stat is not None:
++                    try:
++                        os.chmod(tmp_path, existing_stat.st_mode & 0o777)
++                    except Exception:
++                        pass
++                    try:
++                        os.chown(tmp_path, existing_stat.st_uid, existing_stat.st_gid)
++                    except Exception:
++                        pass
++
++                # Keep a backup of the previous version (atomic + durable).
++                if os.path.isfile(path):
++                    os.replace(path, bkp)
++                    _fsync_dir(dir_path)
++
++                # Atomically replace the target file.
++                os.replace(tmp_path, path)
++                _fsync_dir(dir_path)
++            finally:
++                # If anything above failed before os.replace(tmp_path, path), clean it up.
++                if os.path.exists(tmp_path):
++                    try:
++                        os.remove(tmp_path)
++                    except Exception:
++                        pass
++
++            # Verify the written file parses as JSON.
++            with open(path, "r", encoding="utf-8") as f:
++                json.load(f)
+ 
+-        # if not - move back backup
+         except Exception as e:
+             logger.exception(e)
+-            # remove damaged file
+-            if os.path.isfile(path):
+-                os.remove(path)
+-            shutil.copyfile(bkp, path)
++            # Restore from backup if possible.
++            try:
++                if os.path.isfile(bkp):
++                    os.replace(bkp, path)
++                    _fsync_dir(dir_path)
++            except Exception:
++                pass
+             raise SpecterError(
+-                f"Error:{path} could not be saved. The old version has been restored. Check the logs for details. This is probably a bug."
++                f"Error:{path} could not be saved. The old version has been restored (if available). Check the logs for details. This is probably a bug."
+             )
+ 
+ 
+-- 
+2.43.0
+
