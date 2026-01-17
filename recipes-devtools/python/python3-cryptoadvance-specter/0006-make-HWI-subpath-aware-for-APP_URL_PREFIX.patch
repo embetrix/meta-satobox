@@ -1,0 +1,115 @@
+From 96d40158e87e2421d13f1e7fad847407a30933be Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Sat, 17 Jan 2026 11:47:56 +0100
+Subject: [PATCH] make HWI subpath-aware for APP_URL_PREFIX
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/cryptoadvance/specter/static/hwi.js          |  5 +++--
+ .../specter/templates/includes/hwi/hwi.jinja     |  5 +++--
+ .../templates/settings/hwi_settings.jinja        | 16 ++++++++++++----
+ 3 files changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/src/cryptoadvance/specter/static/hwi.js b/src/cryptoadvance/specter/static/hwi.js
+index a966e266..ec91ca53 100644
+--- a/src/cryptoadvance/specter/static/hwi.js
++++ b/src/cryptoadvance/specter/static/hwi.js
+@@ -3,8 +3,9 @@ function generateId() {
+ }
+ 
+ class HWIBridge {
+-    constructor(url, chain) {
++    constructor(url, chain, defaultUrl='/hwi/api/') {
+         this.url = url;
++        this.defaultUrl = defaultUrl;
+         this.deviceTypes = ['specter', 'coldcard', 'keepkey', 'ledger', 'bitbox02', 'trezor'];
+         this.chain = chain;
+         this.in_progress = false;
+@@ -37,7 +38,7 @@ class HWIBridge {
+                     'method': command, 
+                     'id': requestId,
+                     params,
+-                    forwarded_request: (this.url !== '/hwi/api/'),
++                    forwarded_request: (this.url !== this.defaultUrl),
+                 })
+             }).then(response => response.json());
+         }finally{
+diff --git a/src/cryptoadvance/specter/templates/includes/hwi/hwi.jinja b/src/cryptoadvance/specter/templates/includes/hwi/hwi.jinja
+index 1b3f08c8..c085de06 100644
+--- a/src/cryptoadvance/specter/templates/includes/hwi/hwi.jinja
++++ b/src/cryptoadvance/specter/templates/includes/hwi/hwi.jinja
+@@ -35,14 +35,15 @@
+ </div>
+ 
+ <script type="text/javascript">
+-    let hwiURL = '/hwi/api/';
++    const defaultHwiURL = '{{ url_for("hwi_server.api") }}';
++    let hwiURL = defaultHwiURL;
+     if (
+         '{{ specter.hwi_bridge_url }}'.startsWith('http://localhost') ||
+         '{{ specter.hwi_bridge_url }}'.startsWith('http://127.0.0.1')
+     ) {
+         hwiURL = '{{ specter.hwi_bridge_url }}';
+     }
+-    var hwi = new HWIBridge(hwiURL, '{{ specter.chain }}');
++    var hwi = new HWIBridge(hwiURL, '{{ specter.chain }}', defaultHwiURL);
+ </script>
+ 
+ <script type="text/javascript">
+diff --git a/src/cryptoadvance/specter/templates/settings/hwi_settings.jinja b/src/cryptoadvance/specter/templates/settings/hwi_settings.jinja
+index 25690bd1..1df7e260 100644
+--- a/src/cryptoadvance/specter/templates/settings/hwi_settings.jinja
++++ b/src/cryptoadvance/specter/templates/settings/hwi_settings.jinja
+@@ -11,7 +11,7 @@
+ 	<p class="mb-5">{{ _("Allows Specter to communicate with your hardware devices over USB.") }}</p>
+ 
+ 	<label class="flex bg-dark-800 p-4 mb-5 border-2 border-dark-700 rounded-xl align-start hover:bg-dark-700 cursor-pointer">
+-		<input class="mr-4 h-8 peer" type="radio" name="hwibridge" value="local"  onchange="switchHWIBridgeConfView(this.value)" {% if specter.hwi_bridge_url == '/hwi/api/'%} checked {% endif %}/>
++		<input class="mr-4 h-8 peer" type="radio" name="hwibridge" value="local"  onchange="switchHWIBridgeConfView(this.value)" {% if (not specter.hwi_bridge_url.startswith('http://') and not specter.hwi_bridge_url.startswith('https://')) and specter.hwi_bridge_url.endswith('/hwi/api/') %} checked {% endif %}/>
+ 		<div>
+ 			<h3>{{ _("Local USB connection") }}</h3>
+ 			<p>{{ _("Select this if Specter is installed on this computer") }}</p>
+@@ -27,7 +27,7 @@
+ 	</label>
+ 
+ 	<label class="flex bg-dark-800 p-4 mb-5 border-2 border-dark-700 rounded-xl align-start hover:bg-dark-700 cursor-pointer">
+-		<input class="mr-4 h-8" type="radio" id="custom_hwibridge" name="hwibridge" value="custom" data-style="width: 20px; min-width: 20px; margin-top: 20px;" onchange="switchHWIBridgeConfView(this.value)" {% if specter.hwi_bridge_url != 'http://127.0.0.1:25441/hwi/api/' and specter.hwi_bridge_url != '/hwi/api/' %} checked {% endif %}/>
++		<input class="mr-4 h-8" type="radio" id="custom_hwibridge" name="hwibridge" value="custom" data-style="width: 20px; min-width: 20px; margin-top: 20px;" onchange="switchHWIBridgeConfView(this.value)" {% if specter.hwi_bridge_url != 'http://127.0.0.1:25441/hwi/api/' and not ((not specter.hwi_bridge_url.startswith('http://') and not specter.hwi_bridge_url.startswith('https://')) and specter.hwi_bridge_url.endswith('/hwi/api/')) %} checked {% endif %}/>
+ 		<div>
+ 			<h3>Custom URL</h3>
+ 			<p>{{ _("Select this if you would like to configure manually (experts only)") }}</p>
+@@ -56,13 +56,20 @@
+ 
+ 	<h3 class="mt-8">{{ _("Communication") }}</h3>
+ 	<p>{{ _("You might also need to allow Specter to communicate with the device bridge.") }}</p>
+-		<li>{{ _("Access the device bridge settings.") }} <a href='{{specter.hwi_bridge_url.replace("/hwi/api", "/hwi/settings")}}' target="_blank">Click here</a>.</li>
++		<li>{{ _("Access the device bridge settings.") }}
++			{% if specter.hwi_bridge_url.startswith('http://') or specter.hwi_bridge_url.startswith('https://') %}
++				<a href='{{ specter.hwi_bridge_url.replace("/hwi/api", "/hwi/settings") }}' target="_blank">Click here</a>.
++			{% else %}
++				<a href='{{ url_for("hwi_server.hwi_bridge_settings") }}' target="_blank">Click here</a>.
++			{% endif %}
++		</li>
+ 		<li>{{ _("Add the domain") }} {{ url_for('index', _external=True) }} <span onclick="copyText('{{ url_for('index', _external=True) }}', '{{ _("Copied Specter URL") }}')">({{ _("copy") }}</span> {{ _("to the whitelist there.") }}<br>{{ _("Save the changes and close the window.") }}</li>
+ 		<li>{{ _("Connect your hardware wallet to your computer and test if Specter manage to reach it") }}
+ 		<button class="button mt-8" type="button" onclick="testHWIConnection()">{{ _("Test connection") }}</button></li>
+ 	</ol>
+ 
+ 	<script>
++		const localHwiApiUrl = '{{ url_for("hwi_server.api") }}';
+ 		async function testHWIConnection() {
+ 			if (await enumerate()) {
+ 				showNotification(`{{ _("Device detected successfully! USB connections configured correctly!") }}`);
+@@ -79,7 +86,8 @@
+ 				bridgeUrl.value = 'http://127.0.0.1:25441/hwi/api';
+ 			} else {
+ 				document.getElementById('remote-warning').classList.add('hidden')
+-				bridgeUrl.value = '/hwi/api';
++				// Keep storing the canonical local marker in config, regardless of APP_URL_PREFIX.
++				bridgeUrl.value = '/hwi/api/';
+ 			}
+ 		}
+ 	</script>
+-- 
+2.43.0
+
