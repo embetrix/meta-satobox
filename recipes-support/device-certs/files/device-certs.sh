@@ -9,14 +9,6 @@
 #        certificate management for renewal using PKI system such as ECJBCA or smallsteps 
 # 
 
-# Get device IP
-DEVICE_IP=$(networkctl status | grep Address | awk '{print $2}')
-if ! echo "$DEVICE_IP" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
-    echo "Invalid device IP: $DEVICE_IP"
-    exit 1
-fi
-
-HOSTNAME=$(hostname)
 # Generate ECDSA device certificate (CA-signed)
 if [ ! -f ca-cert.pem ] || [ ! -f ca-key.pem ]; then
     echo "Please generate CA keys first"
@@ -24,6 +16,13 @@ if [ ! -f ca-cert.pem ] || [ ! -f ca-key.pem ]; then
 fi
 
 if [ ! -f device-key.pem ] || [ ! -f device-cert.pem ]; then
+    HOSTNAME=$(hostname)
+    # Get device IP
+    DEVICE_IP=$(networkctl status | grep Address | awk '{print $2}')
+    if ! echo "$DEVICE_IP" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
+        echo "Invalid device IP: $DEVICE_IP"
+        exit 1
+    fi
     openssl genpkey -algorithm EC \
         -pkeyopt ec_paramgen_curve:prime256v1 \
         -pkeyopt ec_param_enc:named_curve \
@@ -38,4 +37,6 @@ if [ ! -f device-key.pem ] || [ ! -f device-cert.pem ]; then
             -CAcreateserial -days 3600 \
             -out device-cert.pem \
             -copy_extensions copy  || exit 1
+else
+    echo "Device keys and certificates already exist, skipping generation."
 fi
