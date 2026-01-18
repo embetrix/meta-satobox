@@ -17,17 +17,22 @@ if ! echo "$DEVICE_IP" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
 fi
 
 HOSTNAME=$(hostname)
-# Generate self signed RSA device certificate
+# Generate ECDSA device certificate (CA-signed)
 if [ ! -f ca-cert.pem ] || [ ! -f ca-key.pem ]; then
     echo "Please generate CA keys first"
     exit 1
 fi
 
 if [ ! -f device-key.pem ] || [ ! -f device-cert.pem ]; then
-    openssl req -new -newkey rsa:4096 -keyout device-key.pem \
-            -out device-csr.pem -nodes \
-            -subj "/C=DE/ST=BW/O=Embetrix/OU=DeviceCert/CN=$HOSTNAME" \
-            -addext "subjectAltName=DNS:$HOSTNAME, DNS:localhost,IP:$DEVICE_IP,IP:127.0.0.1" || exit 1
+    openssl genpkey -algorithm EC \
+        -pkeyopt ec_paramgen_curve:prime256v1 \
+        -pkeyopt ec_param_enc:named_curve \
+        -out device-key.pem || exit 1
+
+    openssl req -new -key device-key.pem \
+        -out device-csr.pem \
+        -subj "/C=DE/ST=BW/O=Embetrix/OU=DeviceCert/CN=$HOSTNAME" \
+        -addext "subjectAltName=DNS:$HOSTNAME, DNS:localhost,IP:$DEVICE_IP,IP:127.0.0.1" || exit 1
 
     openssl x509 -req -in device-csr.pem -CA ca-cert.pem -CAkey ca-key.pem \
             -CAcreateserial -days 3600 \
