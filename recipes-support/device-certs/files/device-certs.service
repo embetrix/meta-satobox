@@ -5,6 +5,7 @@ After=network-online.target systemd-time-wait-sync.service
 
 [Service]
 WorkingDirectory=/etc/certs
+Type=oneshot
 ExecStart=/usr/bin/device-certs
 
 [Install]
