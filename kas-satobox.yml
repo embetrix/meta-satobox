@@ -47,9 +47,17 @@ repos:
     url: "https://github.com/embetrix/meta-tor.git"
     branch: scarthgap
     path: "layers/meta-tor"
+
+env: 
+    RPC_USER  : "satobox"
+    RPC_PASSWD : "sat0b0x"
+    PASSWORD : "r00t"
+    BTC_CHAIN : "signet"
+
 local_conf_header:
   standard: |
     CONF_VERSION = "2"
-    ROOT_PASSWORD   = "r00t"
-    BITCOIND_RPC_USER   = "satobox"
-    BITCOIND_RPC_PASSWD = "sat0b0x"
+    ROOT_PASSWORD   = "${PASSWORD}"
+    BITCOIND_RPC_USER   = "${RPC_USER}"
+    BITCOIND_RPC_PASSWD = "${RPC_PASSWD}"
+    DISTRO_FEATURES:append = " ${BTC_CHAIN}"
