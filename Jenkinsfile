@@ -34,7 +34,7 @@ pipeline {
         stage('Build-Image') {
             steps {
                 sh "BTC_CHAIN=${params.BTC_CHAIN} KAS_MACHINE=${params.MACHINE} KAS_TARGET=${params.IMAGE} kas build --force-checkout --update kas-satobox.yml"
-                archiveArtifacts artifacts: "build/tmp/deploy/images/${params.MACHINE}/${params.IMAGE}-${params.MACHINE}_*" ,
+                archiveArtifacts artifacts: "build/tmp/deploy/images/${params.MACHINE}/${params.IMAGE}-${params.BTC_CHAIN}-${params.MACHINE}_*" ,
                                              followSymlinks: true,
                                              fingerprint: true,
                                              onlyIfSuccessful: true
