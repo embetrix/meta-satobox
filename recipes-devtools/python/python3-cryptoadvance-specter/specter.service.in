@@ -6,7 +6,7 @@ After=electrs.service
 DynamicUser=yes
 User=specter
 Group=specter
-SupplementaryGroups=plugdev
+SupplementaryGroups=plugdev wallets
 StateDirectory=specter
 BindPaths=/var/specter:/var/lib/specter
 Environment=HOME=/var/specter
@@ -14,6 +14,7 @@ Environment=SPECTER_DATA_FOLDER=/var/specter
 Environment=APP_URL_PREFIX=/specter
 Environment=SPECTER_DISABLE_MIGRATIONS=true
 ReadWritePaths=/var/specter
+ReadWritePaths=/var/wallets
 ExecStart=@bindir@/specter server --debug
 Restart=on-failure
 RestartSec=30
