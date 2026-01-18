@@ -35,8 +35,8 @@ PACKAGECONFIG[zmq]    = "-DWITH_ZMQ=ON, -DWITH_ZMQ=OFF, zeromq"
 inherit useradd
 
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM:${PN} = "--system bitcoin"
-USERADD_PARAM:${PN}  = "--system  --no-create-home -g bitcoin -s /bin/false bitcoin"
+GROUPADD_PARAM:${PN} = "--system bitcoin; --system wallets"
+USERADD_PARAM:${PN}  = "--system  --no-create-home -g bitcoin -G wallets -s /bin/false bitcoin"
 
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
 SYSTEMD_SERVICE:${PN} = "bitcoind.service"
