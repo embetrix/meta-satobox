@@ -16,6 +16,7 @@ SRC_URI += "\
     file://0005-add-possibilty-to-skip-migration.patch \
     file://0006-make-HWI-subpath-aware-for-APP_URL_PREFIX.patch \
     file://0007-persistence-atomic-fsync-JSON-writes.patch \
+    file://0008-fix-wallets-directory-detection-and-removal.patch \
     file://config.json \
     file://bitcoin_node.json \
     file://spectrum_node.json \

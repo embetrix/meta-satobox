@@ -1,0 +1,200 @@
+From 54a944a557b4173a93ddb4923d90c4782e48fe25 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Sun, 18 Jan 2026 23:07:05 +0100
+Subject: [PATCH] fix wallets directory detection and removal
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ .../specter/managers/wallet_manager.py        | 22 ++++-
+ src/cryptoadvance/specter/node.py             | 86 ++++++++++++++++---
+ 2 files changed, 95 insertions(+), 13 deletions(-)
+
+diff --git a/src/cryptoadvance/specter/managers/wallet_manager.py b/src/cryptoadvance/specter/managers/wallet_manager.py
+index 9b07732b..277e16c8 100644
+--- a/src/cryptoadvance/specter/managers/wallet_manager.py
++++ b/src/cryptoadvance/specter/managers/wallet_manager.py
+@@ -381,12 +381,32 @@ class WalletManager:
+         logger.info(f"Deleting {wallet.alias}")
+         specter_wallet_deleted = False
+         node_wallet_file_deleted = False
++        walletdir = None
+         # Make first sure that we can unload the wallet in Bitcoin Core
+         try:
+             wallet_rpc_path = os.path.join(
+                 self.rpc_path, wallet.alias
+             )  # e.g. specter/jade_wallet
+             logger.debug(f"The wallet_rpc_path is: {wallet_rpc_path}")
++
++            # If Bitcoin Core is configured with a custom `-walletdir`, wallet files live outside
++            # the chain subfolder under the datadir. Fetch the walletdir before unloading.
++            if node:
++                try:
++                    wallet_rpc = self.rpc.wallet(wallet_rpc_path)
++                    wallet_info = wallet_rpc.getwalletinfo()
++                    walletdir = wallet_info.get("walletdir")
++                    if not walletdir:
++                        # Some Core versions may not include walletdir in getwalletinfo.
++                        try:
++                            walletdir = wallet_rpc.getwalletdir()
++                        except Exception:
++                            pass
++                except Exception as e:
++                    logger.debug(
++                        f"Could not fetch walletdir via getwalletinfo for {wallet_rpc_path}: {e}"
++                    )
++
+             self.rpc.unloadwallet(wallet_rpc_path)
+             # Delete the wallet.json and backups
+             try:
+@@ -404,7 +424,7 @@ class WalletManager:
+                 )
+             # Also delete the wallet file on the node if possible
+             if node:
+-                if node.delete_wallet_file(wallet):
++                if node.delete_wallet_file(wallet, walletdir=walletdir):
+                     node_wallet_file_deleted = True
+         except RpcError:
+             raise SpecterError(
+diff --git a/src/cryptoadvance/specter/node.py b/src/cryptoadvance/specter/node.py
+index 464fe576..98f1473c 100644
+--- a/src/cryptoadvance/specter/node.py
++++ b/src/cryptoadvance/specter/node.py
+@@ -3,7 +3,7 @@ import logging
+ import os
+ from os import path
+ import shutil
+-from typing import Type
++from typing import Optional, Type
+ 
+ from embit.liquid.networks import get_network
+ from flask import render_template
+@@ -21,6 +21,7 @@ from .rpc import (
+     RpcError,
+     autodetect_rpc_confs,
+     get_default_datadir,
++    get_rpcconfig,
+ )
+ from .specter_error import SpecterError, BrokenCoreConnectionException
+ from .device import Device
+@@ -259,7 +260,7 @@ class AbstractNode(NonExistingNode):
+         """This should return the path to a connection template as string"""
+         return "includes/sidebar/components/node_connection.jinja"
+ 
+-    def delete_wallet_file(self, wallet) -> bool:
++    def delete_wallet_file(self, wallet, walletdir: Optional[str] = None) -> bool:
+         """Deleting the wallet file located on the node. This only works if the node is on the same machine as Specter.
+         Returns True if the wallet file could be deleted, otherwise returns False.
+ 
+@@ -642,9 +643,44 @@ class Node(AbstractNode):
+     def is_liquid(self):
+         return is_liquid(self.chain)
+ 
+-    def delete_wallet_file(self, wallet) -> bool:
++    def delete_wallet_file(self, wallet, walletdir: Optional[str] = None) -> bool:
+         """Deleting the wallet file located on the node. This only works if the node is on the same machine as Specter.
+         Returns True if the wallet file could be deleted, otherwise returns False."""
++
++        def _normalize_walletdir(value: str, datadir: str) -> Optional[str]:
++            if not value:
++                return None
++            value = os.path.expanduser(str(value).strip())
++            if not value:
++                return None
++            if not os.path.isabs(value):
++                value = os.path.join(datadir, value)
++            return value
++
++        def _detect_walletdir_from_env(datadir: str) -> Optional[str]:
++            # Only honor a single env var for wallet root overrides.
++            key = "WALLETS_DIR"
++            val = os.getenv(key)
++            normalized = _normalize_walletdir(val, datadir) if val else None
++            if normalized:
++                logger.info(f"Using walletdir from env var {key}: {normalized}")
++                return normalized
++            return None
++
++        def _detect_walletdir_from_conf(datadir: str) -> Optional[str]:
++            try:
++                cfg = get_rpcconfig(datadir=datadir)
++                conf = cfg.get("bitcoin.conf", {})
++                chain_key = self.chain if self.chain != "main" else "main"
++                for section in (chain_key, "default"):
++                    walletdir_value = conf.get(section, {}).get("walletdir")
++                    if not walletdir_value:
++                        continue
++                    return _normalize_walletdir(walletdir_value, datadir)
++            except Exception as e:
++                logger.debug(f"Could not detect walletdir from bitcoin.conf in {datadir}: {e}")
++            return None
++
+         datadir = ""
+         if self.datadir == "":
+             # In case someone did not toggle the auto-detect but still used the default location.
+@@ -657,9 +693,14 @@ class Node(AbstractNode):
+         else:
+             datadir = self.datadir
+         wallet_file_removed = False
+-        path = ""
++        paths_to_try = []
+         # Check whether wallet was really unloaded
+         wallet_rpc_path = os.path.join(wallet.manager.rpc_path, wallet.alias)
++
++        # Safety: wallet RPC paths should be relative and must not traverse directories.
++        if os.path.isabs(wallet_rpc_path) or ".." in wallet_rpc_path.split(os.sep):
++            logger.warning(f"Refusing to delete wallet with unsafe rpc path: {wallet_rpc_path}")
++            return False
+         # If we can unload the wallet via RPC it had not been unloaded properly before by the wallet manager
+         try:
+             self.rpc.unloadwallet(wallet_rpc_path)
+@@ -668,18 +709,39 @@ class Node(AbstractNode):
+             )
+         except RpcError:
+             pass
++
++        effective_walletdir: Optional[str] = None
++        # If Core runs with a custom -walletdir, prefer that location.
++        if walletdir and isinstance(walletdir, str) and os.path.isabs(walletdir):
++            effective_walletdir = walletdir
++        else:
++            effective_walletdir = _detect_walletdir_from_env(datadir) or _detect_walletdir_from_conf(datadir)
++
++        if effective_walletdir:
++            logger.debug(f"Using walletdir for deletion: {effective_walletdir}")
++            paths_to_try.append(os.path.join(effective_walletdir, wallet_rpc_path))
++
++        # Backwards-compatible fallbacks based on datadir/chain.
+         if self.chain == "test":
+-            path = os.path.join(datadir, "testnet3/wallets", wallet_rpc_path)
++            paths_to_try.append(os.path.join(datadir, "testnet3/wallets", wallet_rpc_path))
+         elif self.chain == "main":
+-            path = os.path.join(datadir, wallet_rpc_path)
++            paths_to_try.append(os.path.join(datadir, wallet_rpc_path))
+         else:
+-            path = os.path.join(datadir, f"{self.chain}/wallets", wallet_rpc_path)
++            paths_to_try.append(os.path.join(datadir, f"{self.chain}/wallets", wallet_rpc_path))
++
+         try:
+-            shutil.rmtree(path, ignore_errors=False)
+-            logger.debug(f"Removing wallet file at: {path}")
+-            wallet_file_removed = True
+-        except FileNotFoundError:
+-            logger.debug(f"Could not find any wallet file at: {path}")
++            for path in paths_to_try:
++                try:
++                    shutil.rmtree(path, ignore_errors=False)
++                    logger.debug(f"Removing wallet file at: {path}")
++                    wallet_file_removed = True
++                    break
++                except FileNotFoundError:
++                    logger.debug(f"Could not find any wallet file at: {path}")
++                except PermissionError as e:
++                    logger.warning(f"Permission denied removing wallet file at: {path}: {e}")
++        except Exception as e:
++            logger.exception(f"Unexpected error while deleting wallet files: {e}")
+         return wallet_file_removed
+ 
+     def no_tx_hint(self):
+-- 
+2.43.0
+
