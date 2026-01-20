@@ -1,10 +1,10 @@
-# meta-satobox
+# satobox
 
 <p align ="center"><img src=satobox.jpeg width=480 height=280 /></p>
 
 ## Overview
 
-`Satobox` is a privacy-focused, open-source embedded Linux distribution for running a secure Bitcoin node. Built on Yocto/OE-Core it provides a minimal, hardened platform for bitcoin cryptocurrency operations with integrated privacy features.
+satobox is a privacy-focused, open-source embedded Linux distribution for running a secure Bitcoin node. Built on Yocto/OE-Core it provides a minimal, hardened platform for bitcoin cryptocurrency operations with integrated privacy features.
 
 ### Key Features
 
