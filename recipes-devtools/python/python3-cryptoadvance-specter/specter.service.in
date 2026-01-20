@@ -14,8 +14,7 @@ Environment=WALLETS_DIR=/var/wallets
 Environment=SPECTER_DATA_FOLDER=/var/specter
 Environment=APP_URL_PREFIX=/specter
 Environment=SPECTER_DISABLE_MIGRATIONS=true
-ReadWritePaths=/var/specter
-ReadWritePaths=/var/wallets
+ReadWritePaths=/var/specter /var/wallets
 ExecStart=@bindir@/specter server --debug
 Restart=on-failure
 RestartSec=30
