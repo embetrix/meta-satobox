@@ -1,6 +1,6 @@
 # satobox
 
-<p align ="center"><img src=satobox.jpeg width=480 height=280 /></p>
+<p align ="center"><img src=satobox.png width=480 height=280 /></p>
 
 ## Overview
 
