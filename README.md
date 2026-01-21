@@ -1,41 +1,36 @@
-# satobox
-
 <p align ="center"><img src=satobox.png width=480 height=280 /></p>
+
+<p align="center"><strong>Bitcoin self-custody, done right.</strong></p>
 
 ## Overview
 
-satobox is a privacy-focused, open-source embedded Linux distribution for running a secure Bitcoin node. Built on Yocto/OE-Core it provides a minimal, hardened platform for bitcoin cryptocurrency operations with integrated privacy features.
+Satobox is a privacy-focused, open-source minimal embedded Linux distribution for running a secure Bitcoin node. Built on Yocto/OE-Core, it provides a minimal, hardened platform for Bitcoin operations with integrated privacy features and hardware wallet support.
+
+
 
 ### Key Features
 
-- Bitcoin Full Node: Complete Bitcoin Core daemon with RPC and multi hardware wallet support
-- Privacy: Integrated Tor for anonymous networking
-- Transaction Indexing: Built-in Electrs server for wallet indexing
-- Security: Hardened with security best practices
-- Flexible Deployment: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU ressources
-- Reproducible Build: Yocto for consistent and reliable builds from the sources
+- Bitcoin full node: [Bitcoin Core](https://github.com/bitcoin/bitcoin) with RPC and hardware wallet support
+- Privacy: Integrated [Tor](https://gitlab.torproject.org/tpo/core/tor) for anonymous networking
+- Transaction indexing: [Electrs](https://github.com/romanz/electrs) server for fast wallet indexing
+- Wallet management: Integrated via [Specter Desktop](https://specter.solutions/desktop) with support for all major [hardware wallets](https://hwi.readthedocs.io/en/latest/devices/index.html#support-matrix)
+- Security: Hardened with best practices
+- Flexible deployment: Runs on QEMU emulation or Linux hardware with enough RAM/CPU resources
+- Reproducible builds: Yocto for consistent and reliable builds from source
 
 
-
-
-## Build 
+## Build
 
 This layer can be integrated in your layers or built standalone using [kas-tool](https://github.com/siemens/kas):
+
+Prerequisites:
+
+- Container runtime: Docker or Podman
+- `kas` + `kas-container`
 
 ```
 pip3 install kas
 ```
-
-### Bitcoin network
-
-By default Satobox is configured to run on the **signet** test network.
-
-To enable **mainnet**, build with the `mainnet` distro feature enabled (for example in `conf/local.conf` or your distro config):
-
-```conf
-DISTRO_FEATURES:append = " mainnet"
-```
-Mainnet requires a dedicated NVMe disk (or equivalent persistent storage) sized to hold the Bitcoin blockchain.
 
 To perform a build:
 
@@ -43,22 +38,66 @@ To perform a build:
 KAS_MACHINE=<MACHINE> kas-container build kas-satobox.yml
 ```
 
-for example:
-
-### Raspberrypi5
+Example for raspberrypi5:
 
 ```
 KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ```
 
+By default Satobox is configured to use the `signet` test network.
+
+To enable `mainnet`, set the environment variable `BTC_CHAIN="mainnet"`:
+
+```
+BTC_CHAIN="mainnet" KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
+```
+
+`mainnet` requires dedicated fast storage for the full blockchain.
+For Raspberry Pi deployments, use a Raspberry Pi 5 with an M.2 HAT and an NVMe SSD with at least **2TB** capacity.
+
 ## Flash SD Card
 
-Flash image on a SD Card using [bmap-tools](https://github.com/yoctoproject/bmaptool):
+Flash image on a SD Card (at least 32GB) using [bmap-tools](https://github.com/yoctoproject/bmaptool):
+
+Warning: double-check the target device before flashing (this will overwrite the selected disk).
 
 ```
 sudo bmaptool copy \
-    build/tmp/deploy/images/raspberrypi5/satobox-image.wic.bz2 \
-    /dev/mmcblk0
+     build/tmp/deploy/images/raspberrypi5/satobox-image.wic.bz2 \
+     /dev/mmcblk0
+```
+
+## Run 
+
+Insert the flashed SD card into the Raspberry Pi, connect it to your network, and power it on.
+
+If an NVMe drive is detected (for example via an M.2 HAT), it will be automatically formatted and used for data storage.
+Warning: this will erase all data on that NVMe drive.
+
+Find the device IP address (for example from your router/DHCP leases), then open the Specter Desktop wallet management UI at:
+
+```
+https://<IP>/specter
+```
+
+Default credentials: username `admin`, password `admin` (change this after first login).
+
+Note: your browser will warn about the HTTPS self-signed certificate.
+
+
+## Wireless LAN
+
+For the initial blockchain sync, it is recommended to use an Ethernet connection for better stability and throughput.
+
+To enable Wi-Fi, edit `/etc/wpa_supplicant/wpa_supplicant.conf`, for example:
+
+After updating `wpa_supplicant.conf`, the Wi-Fi connection will be established automatically on boot.
+
+```
+network={
+        ssid="myhotspot"
+        psk=315089e3db2ce18ad94caba8a3b71f35947487d1c7913a44130e7ec2f91905040
+}
 ```
 
 ## Documentation
@@ -66,8 +105,8 @@ sudo bmaptool copy \
 - [Usage Guide](USAGE.md) Wallet operations, transaction management, and CLI commands
 - [Disclaimer & Legal](DISCLAIMER.md) Important legal information
 
+## Contributing
 
-## License
+If you want to contribute changes, open a pull request at:
 
-MIT License - See [LICENSE](LICENSE) for details
-
+https://github.com/embetrix/satobox/pulls
