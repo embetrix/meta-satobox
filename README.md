@@ -82,7 +82,7 @@ Find the device IP address (for example from your router/DHCP leases), then open
 https://<IP>/specter
 ```
 
-Alternatively, you can access it via the device hostname (example):
+Alternatively, you can access it via the device hostname:
 
 ```
 https://<HOSTNAME>/specter
