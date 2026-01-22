@@ -2,6 +2,7 @@ DESCRIPTION = "Satobox Image"
 
 inherit core-image passwd
 
+# for mainnet configuration remove debug tools, ssh and package management
 EXTRA_IMAGE_FEATURES:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', ' debug-tweaks', d)}"
 IMAGE_FEATURES:append = " read-only-rootfs"
 IMAGE_FEATURES:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', ' package-management ssh-server-openssh', d)}"
