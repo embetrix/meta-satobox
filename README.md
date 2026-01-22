@@ -17,7 +17,7 @@ Satobox is a privacy-focused, open-source minimal embedded Linux distribution fo
 - Transaction indexing: [Electrs](https://github.com/romanz/electrs) server for fast wallet indexing
 - Wallet management: Integrated via [Specter Desktop](https://specter.solutions/desktop) with support for all major [hardware wallets](https://hwi.readthedocs.io/en/latest/devices/index.html#support-matrix)
 - Security: Hardened with best practices
-- Flexible deployment: Runs on QEMU emulation or Linux hardware with enough RAM/CPU resources
+- Flexible deployment: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU resources
 - Reproducible builds: Yocto for consistent and reliable builds from source
 
 
@@ -55,7 +55,7 @@ BTC_CHAIN="mainnet" KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
 ```
 
 `mainnet` requires dedicated fast storage for the full blockchain.
-For Raspberry Pi deployments, use a Raspberry Pi 5 with an M.2 HAT and an NVMe SSD with at least **2TB** capacity.
+For Raspberry Pi deployments, use a Raspberry Pi 5 with an [M.2 HAT](https://www.raspberrypi.com/documentation/accessories/m2-hat-plus.html) and an NVMe SSD with at least **2TB** capacity.
 
 ## Flash SD Card
 
@@ -80,6 +80,12 @@ Find the device IP address (for example from your router/DHCP leases), then open
 
 ```
 https://<IP>/specter
+```
+
+Alternatively, you can access it via the device hostname (example):
+
+```
+https://<HOSTNAME>/specter
 ```
 
 Default credentials: username `admin`, password `admin` (change this after first login).
