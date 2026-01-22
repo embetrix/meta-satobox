@@ -1,13 +1,13 @@
+[![CI](https://github.com/embetrix/satobox/actions/workflows/ci.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/ci.yml)
+
 <p align ="center"><img src=satobox.png width=480 height=280 /></p>
 
-<p align="center"><strong>Bitcoin self-custody, done right.</strong></p>
-
-[![CI](https://github.com/embetrix/satobox/actions/workflows/ci.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/ci.yml)
 
 ## Overview
 
-Satobox is a privacy-focused, open-source minimal embedded Linux distribution for running a secure Bitcoin node. Built on Yocto/OE-Core, it provides a minimal, hardened platform for Bitcoin operations with integrated privacy features and hardware wallet support.
+Satobox is a privacy-first, open-source embedded Linux distribution purpose-built for secure Bitcoin self-custody. Built on Yocto/OE-Core, it delivers a minimal, hardened operating system optimized for running a Bitcoin node with strong privacy defaults and hardware wallet integration.
 
+Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-purpose Debian/Ubuntu systems and large collections of precompiled packages. Satobox takes a different approach: a small, reproducible, security-hardened OS built from source, designed to minimize attack surface and maximize transparency and user sovereignty.
 
 
 ### Key Features
@@ -20,6 +20,8 @@ Satobox is a privacy-focused, open-source minimal embedded Linux distribution fo
 - Flexible deployment: Runs on QEMU emulation or any Linux hardware with enough RAM/CPU resources
 - Reproducible builds: Yocto for consistent and reliable builds from source
 
+
+<p align ="center"><img src=satobox_overview.png width=512 height=340 /></p>
 
 ## Build
 
