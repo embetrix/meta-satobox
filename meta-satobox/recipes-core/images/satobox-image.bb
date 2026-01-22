@@ -11,6 +11,7 @@ IMAGE_INSTALL:append= "\
     ${CORE_IMAGE_BASE_INSTALL} \
     iptables \
     tzdata \
+    nginx \
     hostname-setup \
     usbguard \
     python3-cryptoadvance-specter \
