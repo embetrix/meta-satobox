@@ -3,6 +3,9 @@ name: CI
 permissions:
   contents: write
 
+env:
+  MACHINE: raspberrypi5
+
 on:
   push:
     tags:
@@ -16,15 +19,36 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           clean: false
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: check
+        run: |
+          pwd
+          git rev-parse --show-toplevel
+          git describe --tags --always --dirty
+          git tag --points-at HEAD || true
 
       - name: Build Testnet Image
-        run: KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
+        run: |
+          pwd
+          git rev-parse --show-toplevel
+          git describe --tags --always --dirty
+          git tag --points-at HEAD || true
+          KAS_MACHINE=${{env.MACHINE}} kas-container build kas-satobox.yml
 
       - name: Build Mainnet Image
-        run: BTC_CHAIN="mainnet" KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
+        run: |
+          pwd
+          git rev-parse --show-toplevel
+          git describe --tags --always --dirty
+          git tag --points-at HEAD || true
+          BTC_CHAIN="mainnet" KAS_MACHINE=${{env.MACHINE}} kas-container build kas-satobox.yml
 
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
@@ -37,6 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/tmp/deploy/images/*/satobox-image-*net*.wic.bz2
-            build/tmp/deploy/images/*/satobox-image-*net*.wic.bmap
-            build/tmp/deploy/images/*/satobox-image-*net*.manifest
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.wic.bz2
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.wic.bmap
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.manifest
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.spdx.tar.zst
