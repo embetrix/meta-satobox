@@ -40,6 +40,7 @@ jobs:
           git rev-parse --show-toplevel
           git describe --tags --always --dirty
           git tag --points-at HEAD || true
+          KAS_MACHINE=${{env.MACHINE}} kas-container shell kas-satobox.yml -c 'bitbake -e satobox-image | grep ^TOPDIR='
           KAS_MACHINE=${{env.MACHINE}} kas-container build kas-satobox.yml
 
       - name: Build Mainnet Image
