@@ -28,20 +28,22 @@ jobs:
         run: KAS_MACHINE=${{env.MACHINE}} kas-container build kas-satobox.yml
 
       - name: Build Mainnet Image
-        run: BTC_CHAIN="mainnet" KAS_MACHINE=${{env.MACHINE}} kas-container build kas-satobox.yml
-
+        run:  KAS_MACHINE=${{env.MACHINE}} kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
+        
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: ${{github.workspace}}/build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.wic.*
+          path: ${{github.workspace}}/build/tmp/deploy/images/${{env.MACHINE}}//satobox-image-signet-${{env.MACHINE}}_*.{manifest,wic.bz2,wic.bmap}
 
       - name: Upload Release Assets
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.wic.bz2
-            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.wic.bmap
-            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.manifest
-            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-*net-*_*.spdx.tar.zst
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-signet-${{env.MACHINE}}_*.manifest
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-mainnet-${{env.MACHINE}}_*.manifest
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-signet-${{env.MACHINE}}_*.wic.bz2
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-mainnet-${{env.MACHINE}}_*.wic.bz2
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-signet-${{env.MACHINE}}_*.wic.bmap
+            build/tmp/deploy/images/${{env.MACHINE}}/satobox-image-mainnet-${{env.MACHINE}}_*.wic.bmap
