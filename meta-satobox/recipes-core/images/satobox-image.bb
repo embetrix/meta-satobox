@@ -29,6 +29,7 @@ DEV_TOOLS = "\
     curl \
     iperf3 \
     sqlite3 \
+    systemd-analyze \
 	"
 
 IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${DEV_TOOLS}", d)}"
