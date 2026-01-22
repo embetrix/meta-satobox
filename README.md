@@ -51,7 +51,7 @@ By default Satobox is configured to use the `signet` test network.
 To enable `mainnet`, set the environment variable `BTC_CHAIN="mainnet"`:
 
 ```
-BTC_CHAIN="mainnet" KAS_MACHINE=raspberrypi5 kas-container build kas-satobox.yml
+KAS_MACHINE=raspberrypi5 kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
 ```
 
 `mainnet` requires dedicated fast storage for the full blockchain.
