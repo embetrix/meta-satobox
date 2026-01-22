@@ -41,3 +41,5 @@ do_install:append() {
 }
 
 FILES:${PN} += "${sysconfdir}/electrs"
+
+RDEPENDS:${PN} += "bitcoin"
