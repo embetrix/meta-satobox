@@ -23,6 +23,18 @@ Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-
 
 <p align ="center"><img src=satobox_overview.png width=512 height=340 /></p>
 
+## Security
+
+- Minimal system configuration with only required components and least-privilege principles
+- Built entirely from source using Yocto / OE-Core (reproducible builds)
+- Firewall enabled by default
+- USBGuard to restrict unauthorized USB devices
+- Hardened compiler and linker security flags
+- Read-only root filesystem
+- No SSH or login on mainnet images
+
+Additional security mechanisms may be introduced in the future (e.g. secure/measured boot, secure storage, file system encryption) if there is community interest or real-world demand.
+
 ## Build
 
 This layer can be integrated in your layers or built standalone using [kas-tool](https://github.com/siemens/kas):
