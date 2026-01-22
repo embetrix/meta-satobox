@@ -1,6 +1,6 @@
 def distro_version(d):
     import subprocess
-    project_path = d.getVar('TOPDIR', True)
+    project_path = d.getVar('SATOBOX_BASE', True)
     cmd = "git describe --tags --always --dirty"
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, cwd=project_path)
     out, err =  proc.communicate()
