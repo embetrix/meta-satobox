@@ -2,30 +2,31 @@ DESCRIPTION = "Satobox Image"
 
 inherit core-image passwd
 
-EXTRA_IMAGE_FEATURES = "debug-tweaks"
-IMAGE_FEATURES += "package-management ssh-server-openssh read-only-rootfs"
+EXTRA_IMAGE_FEATURES:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', ' debug-tweaks', d)}"
+IMAGE_FEATURES:append = " read-only-rootfs"
+IMAGE_FEATURES:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', ' package-management ssh-server-openssh', d)}"
 
-IMAGE_INSTALL += "\
+IMAGE_INSTALL:append= "\
     packagegroup-core-boot \
-    packagegroup-core-full-cmdline \
     ${CORE_IMAGE_BASE_INSTALL} \
-    htop \
-    tcpdump \
-    gdbserver \
-    strace \
-    nginx \
-    curl \
-    openssl-bin \
-    iperf3 \
     iptables \
-    sqlite3 \
     tzdata \
-    "
-
-IMAGE_INSTALL += "\
     hostname-setup \
     usbguard \
     python3-cryptoadvance-specter \
     bitcoin \
     electrs \
     "
+
+DEV_TOOLS = "\
+	packagegroup-core-full-cmdline \
+    htop \
+    tcpdump \
+    gdbserver \
+    strace \
+    curl \
+    iperf3 \
+    sqlite3 \
+	"
+
+IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${DEV_TOOLS}", d)}"
