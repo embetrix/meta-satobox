@@ -107,7 +107,7 @@ Default credentials: username `admin`, password `admin` (change this after first
 Note: your browser will warn about the HTTPS self-signed certificate.
 
 
-<p align ="center"><img src=images/specter-desktop.png width=480 height=280 /></p>
+<p align ="center"><img src=images/specter-desktop.png width=864 height=504 /></p>
 
 
 
