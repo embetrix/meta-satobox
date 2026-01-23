@@ -116,7 +116,7 @@ Note: your browser will warn about the HTTPS self-signed certificate.
 ## Networking
 
 Use an Ethernet connection for best Network stability and throughput.
-Networking via DHCP is configured by default; just plug in Ethernet and the device will obtain an IP address automatically.
+Networking via DHCP is configured by default, just plug in Ethernet and the device will obtain an IP address automatically.
 
 Wi-Fi is currently not supported.
 
