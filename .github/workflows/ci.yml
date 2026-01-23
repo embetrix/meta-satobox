@@ -8,8 +8,9 @@ env:
 
 on:
   push:
-    tags:
-      - '*'
+    branches: [ "scarthgap" ]
+  pull_request:
+    branches: [ "scarthgap" ]
 
 jobs:
   build:
@@ -20,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           clean: false
-          ref: ${{ github.ref }}
+          ref: ${{github.ref}}
           fetch-depth: 0
           fetch-tags: true
 
@@ -29,12 +30,6 @@ jobs:
 
       - name: Build Mainnet Image
         run:  KAS_MACHINE=${{env.MACHINE}} kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
-        
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: ${{github.workspace}}/build/tmp/deploy/images/${{env.MACHINE}}//satobox-image-signet-${{env.MACHINE}}_*.{manifest,wic.bz2,wic.bmap}
 
       - name: Upload Release Assets
         if: startsWith(github.ref, 'refs/tags/')
