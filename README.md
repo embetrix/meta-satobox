@@ -111,20 +111,11 @@ Note: your browser will warn about the HTTPS self-signed certificate.
 
 
 
-## Wireless LAN
+## Network
 
 For the initial blockchain sync, it is recommended to use an Ethernet connection for better stability and throughput.
 
-To enable Wi-Fi, edit `/etc/wpa_supplicant/wpa_supplicant.conf`, for example:
-
-After updating `wpa_supplicant.conf`, the Wi-Fi connection will be established automatically on boot.
-
-```
-network={
-        ssid="myhotspot"
-        psk=315089e3db2ce18ad94caba8a3b71f35947487d1c7913a44130e7ec2f91905040
-}
-```
+Networking via DHCP is configured by default; just plug in Ethernet and the device will obtain an IP address automatically.
 
 ## Documentation
 
