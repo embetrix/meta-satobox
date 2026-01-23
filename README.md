@@ -75,6 +75,8 @@ For Raspberry Pi deployments, use a Raspberry Pi 5 with an [M.2 HAT](https://www
 
 Flash image on a SD Card (at least 32GB) using [bmap-tools](https://github.com/yoctoproject/bmaptool):
 
+If you are not building from scratch, you can download the prebuilt image artifacts from GitHub Releases and flash those instead.
+
 Warning: double-check the target device before flashing (this will overwrite the selected disk).
 
 ```
