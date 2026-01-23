@@ -7,7 +7,7 @@
 
 Satobox is a privacy-first, open-source embedded Linux distribution purpose-built for secure Bitcoin self-custody. Built on Yocto/OE-Core, it delivers a minimal, hardened operating system optimized for running a Bitcoin node with strong privacy defaults and hardware wallet integration.
 
-Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-purpose Debian/Ubuntu systems and large collections of precompiled packages. Satobox takes a different approach: a small, reproducible, security-hardened OS built from source, designed to minimize attack surface and maximize transparency and user sovereignty.
+Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-purpose Debian/Ubuntu systems and large collections of precompiled packages, which can introduce additional supply-chain and security risks. Satobox takes a different approach: a small, reproducible, security-hardened OS built from source, designed to minimize attack surface and maximize transparency and user sovereignty.
 
 
 ### Key Features
