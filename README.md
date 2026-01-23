@@ -1,6 +1,6 @@
 [![CI](https://github.com/embetrix/satobox/actions/workflows/ci.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/ci.yml)
 
-<p align ="center"><img src=satobox.png width=480 height=280 /></p>
+<p align ="center"><img src=images/satobox.png width=480 height=280 /></p>
 
 
 ## Overview
@@ -21,7 +21,7 @@ Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-
 - Reproducible builds: Yocto for consistent and reliable builds from source
 
 
-<p align ="center"><img src=satobox_overview.png width=512 height=340 /></p>
+<p align ="center"><img src=images/satobox_overview.png width=512 height=340 /></p>
 
 ## Security
 
@@ -105,6 +105,10 @@ https://<HOSTNAME>/specter
 Default credentials: username `admin`, password `admin` (change this after first login).
 
 Note: your browser will warn about the HTTPS self-signed certificate.
+
+
+<p align ="center"><img src=images/specter-desktop.png width=480 height=280 /></p>
+
 
 
 ## Wireless LAN
