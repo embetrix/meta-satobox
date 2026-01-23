@@ -3,7 +3,7 @@
 
 ## Overview
 
-<p align ="left"><img src=images/satobox.png width=120 height=70 /></p>
+<p align ="left"><img src=images/satobox.png width=180 height=105 /></p>
 
 Satobox is a privacy-first, open-source embedded Linux distribution purpose-built for secure Bitcoin self-custody. Built on Yocto/OE-Core, it delivers a minimal, hardened operating system optimized for running a Bitcoin node with strong privacy defaults and hardware wallet integration.
 
@@ -13,7 +13,7 @@ Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-
 ### Key Features
 
 - Bitcoin full node: [Bitcoin Core](https://github.com/bitcoin/bitcoin) with RPC and hardware wallet support
-- Privacy: Integrated [Tor](https://gitlab.torproject.org/tpo/core/tor) for anonymous networking
+- Privacy: Integrated [Tor](https://gitlab.torproject.org/tpo/core/tor) for Bitcoin traffic privacy
 - Transaction indexing: [Electrs](https://github.com/romanz/electrs) server for fast wallet indexing
 - Wallet management: Integrated via [Specter Desktop](https://specter.solutions/desktop) with support for all major [hardware wallets](https://hwi.readthedocs.io/en/latest/devices/index.html#support-matrix)
 - Security: Hardened with best practices
@@ -68,7 +68,7 @@ To enable `mainnet`, set the environment variable `BTC_CHAIN="mainnet"`:
 KAS_MACHINE=raspberrypi5 kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
 ```
 
-`mainnet` requires dedicated fast storage for the full blockchain.
+`mainnet` requires dedicated fast storage for the full blockchain and indexing.
 For Raspberry Pi deployments, use a Raspberry Pi 5 with an [M.2 HAT](https://www.raspberrypi.com/documentation/accessories/m2-hat-plus.html) and an NVMe SSD with at least **2TB** capacity.
 
 ## Flash SD Card
