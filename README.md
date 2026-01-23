@@ -1,9 +1,9 @@
 [![CI](https://github.com/embetrix/satobox/actions/workflows/ci.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/ci.yml)
 
-<p align ="center"><img src=images/satobox.png width=480 height=280 /></p>
-
 
 ## Overview
+
+<p align ="center"><img src=images/satobox.png width=480 height=280 /></p>
 
 Satobox is a privacy-first, open-source embedded Linux distribution purpose-built for secure Bitcoin self-custody. Built on Yocto/OE-Core, it delivers a minimal, hardened operating system optimized for running a Bitcoin node with strong privacy defaults and hardware wallet integration.
 
