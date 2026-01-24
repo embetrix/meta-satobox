@@ -12,7 +12,7 @@ BindPaths=/var/specter:/var/lib/specter
 Environment=HOME=/var/specter
 Environment=WALLETS_DIR=/var/wallets
 Environment=SPECTER_DATA_FOLDER=/var/specter
-Environment=APP_URL_PREFIX=/specter
+#Environment=APP_URL_PREFIX=/specter
 Environment=SPECTER_DISABLE_MIGRATIONS=true
 ReadWritePaths=/var/specter /var/wallets
 ExecStart=@bindir@/specter server --debug
