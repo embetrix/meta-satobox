@@ -3,6 +3,7 @@
 export PATH=$PATH:/sbin:/usr/sbin
 
 ROOT_MNT="/tmp/rootfs"
+BOOT_MNT="/boot"
 DATA_MNT="/var/data"
 BITCOIN_MNT="/var/bitcoin"
 WALLETS_MNT="/var/wallets"
@@ -210,6 +211,7 @@ else
 fi
 mount -o $OPT_PART -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
 mount -o $OPT_PART -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
+mount -L boot  $ROOT_MNT$BOOT_MNT  || error_exit "cannot mount $BOOT_MNT"
 
 # Switch to real root
 echo "Switch to real root..."

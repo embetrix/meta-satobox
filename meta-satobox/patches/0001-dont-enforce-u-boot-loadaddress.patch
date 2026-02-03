@@ -1,0 +1,12 @@
+diff --git a/recipes-kernel/linux/linux-raspberrypi.inc b/recipes-kernel/linux/linux-raspberrypi.inc
+index 036ff22..67d67aa 100644
+--- a/recipes-kernel/linux/linux-raspberrypi.inc
++++ b/recipes-kernel/linux/linux-raspberrypi.inc
+@@ -44,5 +44,5 @@ KERNEL_MODULE_AUTOLOAD += "${@bb.utils.contains("MACHINE_FEATURES", "pitft28r",
+ # manually. This value unused if KERNEL_IMAGETYPE is not uImage.
+ KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
+ 
+-UBOOT_ENTRYPOINT =       "0x00008000"
+-UBOOT_LOADADDRESS =      "0x00008000"
++UBOOT_ENTRYPOINT ?=       "0x00008000"
++UBOOT_LOADADDRESS ?=      "0x00008000"

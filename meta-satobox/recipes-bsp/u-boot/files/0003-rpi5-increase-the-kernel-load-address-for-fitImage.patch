@@ -1,0 +1,25 @@
+From 359d9cb204500a77b052b5b4ab4c4669a8b454be Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Sun, 1 Feb 2026 13:00:44 +0100
+Subject: [PATCH] rpi5: increase the kernel load address for fitImage
+
+---
+ board/raspberrypi/rpi/rpi.env | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/raspberrypi/rpi/rpi.env b/board/raspberrypi/rpi/rpi.env
+index 30228285edd..5899560d50e 100644
+--- a/board/raspberrypi/rpi/rpi.env
++++ b/board/raspberrypi/rpi/rpi.env
+@@ -68,7 +68,7 @@ initrd_high=ffffffffffffffff
+ fdt_high=ffffffff
+ initrd_high=ffffffff
+ #endif
+-kernel_addr_r=0x00080000
++kernel_addr_r=0x08080000
+ scriptaddr=0x02400000
+ pxefile_addr_r=0x02500000
+ fdt_addr_r=0x02600000
+-- 
+2.34.1
+
