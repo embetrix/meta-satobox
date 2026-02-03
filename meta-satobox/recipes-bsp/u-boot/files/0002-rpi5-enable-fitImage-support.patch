@@ -1,0 +1,24 @@
+From bdc9320f1f42390f784731b4bc807ff7a892ef27 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Sat, 31 Jan 2026 13:49:38 +0100
+Subject: [PATCH] rpi5: enable fitImage support
+
+---
+ configs/rpi_arm64_defconfig | 8 +++++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
+index 9fe5d177943..3c49f5f57d5 100644
+--- a/configs/rpi_arm64_defconfig
++++ b/configs/rpi_arm64_defconfig
+@@ -64,3 +64,7 @@ CONFIG_VIDEO_BCM2835=y
+ CONFIG_CONSOLE_SCROLL_LINES=10
+ CONFIG_PHYS_TO_BUS=y
+ # CONFIG_HEXDUMP is not set
++CONFIG_FIT=y
++CONFIG_FIT_VERBOSE=y
++CONFIG_OF_LIBFDT=y
++CONFIG_SHA256=y
+-- 
+2.34.1
+

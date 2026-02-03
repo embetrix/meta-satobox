@@ -35,6 +35,10 @@ repos:
     url: "https://git.yoctoproject.org/git/meta-raspberrypi.git"
     branch: scarthgap
     path: "layers/meta-raspberrypi"
+    patches:
+      u-boot-loadaddress:
+        repo: meta-satobox
+        path: patches/0001-dont-enforce-u-boot-loadaddress.patch
   meta-lts-mixins:
     url: "https://git.yoctoproject.org/meta-lts-mixins"
     branch: scarthgap/u-boot
