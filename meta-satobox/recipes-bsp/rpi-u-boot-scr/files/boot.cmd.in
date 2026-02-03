@@ -1,4 +1,14 @@
+saveenv
 fdt addr ${fdt_addr} && fdt get value bootargs /chosen bootargs
-fatload @@BOOT_MEDIA@@ 0:2 ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
-if test ! -e @@BOOT_MEDIA@@ 0:1 uboot.env; then saveenv; fi;
+if test "${active_system}" = "1"; then
+	echo "booting system B..."
+    setenv kpart 3
+    setenv rpart 5
+else
+	echo "booting system A..."
+    setenv kpart 2
+    setenv rpart 4
+fi
+setenv bootargs "${bootargs} root=/dev/mmcblk0p${rpart}"
+fatload @@BOOT_MEDIA@@ 0:${kpart} ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}
