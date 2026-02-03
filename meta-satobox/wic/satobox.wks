@@ -1,7 +1,8 @@
 # description: Create a disk image
-part /             --ondisk mmcblk0  --label boot       --fixed-size 100M   --fstype=vfat  --source bootimg-partition  --active --align 4096
-part /             --ondisk mmcblk0  --label primary    --fixed-size 2048M  --fstype=ext4   --source rootfs
-part /             --ondisk mmcblk0  --label secondary  --fixed-size 2048M  --fstype=ext4
+part /             --ondisk mmcblk0  --label bootA      --fixed-size 100M   --fstype=vfat   --source bootimg-partition  --active --align 4096
+part /             --ondisk mmcblk0  --label bootB      --fixed-size 100M   --fstype=vfat   --source bootimg-partition
+part /             --ondisk mmcblk0  --label rootA      --fixed-size 2048M  --fstype=ext4   --source rootfs
+part /             --ondisk mmcblk0  --label rootB      --fixed-size 2048M  --fstype=ext4
 part /             --ondisk mmcblk0  --label data       --fixed-size 1024M  --fstype=ext4
 part /             --ondisk mmcblk0  --label wallets    --fixed-size 1024M  --fstype=ext4
 part /             --ondisk mmcblk0  --label backups    --fixed-size 1024M  --fstype=ext4
