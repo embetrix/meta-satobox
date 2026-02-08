@@ -1,4 +1,10 @@
-# Inject U-Boot FIT signing public keys into Raspberry Pi firmware DTBs
+# On Raspberry Pi the firmware loads from the boot partition 
+# the DTB produced by the kernel build ! 
+# So the DTB U-Boot receives is the kernel-generated DTB one not a U-Boot DTB !
+# That’s why we inject the FIT public keys into those kernel DTBs in the deploy step 
+# so that U-Boot can verify the FIT image signature correctly:
+# https://docs.u-boot.org/en/latest/board/broadcom/raspberrypi.html
+
 inherit uboot-config
 
 do_deploy:append() {
@@ -7,7 +13,7 @@ do_deploy:append() {
         return
     fi
 
-    if ! echo ${KERNEL_IMAGETYPES} | grep -wq "fitImage"; then
+    if ! ${@bb.utils.contains('KERNEL_IMAGETYPES', 'fitImage', 'true', 'false', d)}; then
         return
     fi
 
@@ -15,10 +21,7 @@ do_deploy:append() {
         return
     fi
 
-    deployDir="${DEPLOYDIR}"
-    if [ -n "${KERNEL_DEPLOYSUBDIR}" ]; then
-        deployDir="${DEPLOYDIR}/${KERNEL_DEPLOYSUBDIR}"
-    fi
+    deployDir="${DEPLOYDIR}${@'/' + d.getVar('KERNEL_DEPLOYSUBDIR') if d.getVar('KERNEL_DEPLOYSUBDIR') else ''}"
 
     if [ ! -e "${deployDir}/fitImage" ]; then
         return
