@@ -27,8 +27,8 @@ jobs:
           fetch-tags: true
 
       - name: Build Testnet/Mainnet Images
-        run: >
-          KAS_MACHINE=${{ env.MACHINE }} kas-container build kas-satobox.yml &&
+        run: |
+          KAS_MACHINE=${{ env.MACHINE }} kas-container build kas-satobox.yml
           KAS_MACHINE=${{ env.MACHINE }} kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
 
       - name: Upload Release Assets
