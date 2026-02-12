@@ -1,0 +1,43 @@
+From 1edd666fb38c60b21253516625f022a4b690d91a Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Wed, 11 Feb 2026 09:25:26 +0100
+Subject: [PATCH] rpi-eeprom: enable native build
+
+enable native build for rpi-eeprom utilities which are required
+for i.e secure boot signing or other host operations
+
+https://github.com/agherzan/meta-raspberrypi/pull/1580
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ recipes-bsp/rpi-eeprom/rpi-eeprom_git.bb | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/recipes-bsp/rpi-eeprom/rpi-eeprom_git.bb b/recipes-bsp/rpi-eeprom/rpi-eeprom_git.bb
+index f3ca5e3..c68f97f 100644
+--- a/recipes-bsp/rpi-eeprom/rpi-eeprom_git.bb
++++ b/recipes-bsp/rpi-eeprom/rpi-eeprom_git.bb
+@@ -13,11 +13,14 @@ PV = "v2025.03.10-2712"
+ 
+ S = "${WORKDIR}/git"
+ 
+-RDEPENDS:${PN} += " \
++RDEPENDS:${PN}:append = " \
+     coreutils \
+     python3 \
+     python3-pycryptodomex \
+     openssl \
++"
++
++RDEPENDS:${PN}:append:class-target = " \
+     xxd \
+     pciutils \
+ "
+@@ -66,4 +69,4 @@ INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+ # need to disable arch check for it otherwise it cannot packed.
+ QAPATHTEST[arch] = ""
+ 
+-COMPATIBLE_MACHINE = "raspberrypi4|raspberrypi4-64|raspberrypi5"
++BBCLASSEXTEND = "native"
+-- 
+2.43.0

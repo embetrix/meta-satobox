@@ -1,5 +1,22 @@
+From 0f5414842e9dd9a26f5c3657067b8112ad898065 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Mon, 2 Feb 2026 10:49:22 +0100
+Subject: [PATCH] linux-raspberrypi.inc: relax uboot ENTRYPOINT/LOADADDRESS
+ definitions
+
+Set UBOOT_ENTRYPOINT/UBOOT_LOADADDRESS using the weak assignment operator (?=)
+to allow for easier override in downstream layers or machine configurations
+without forcing a hardcoded value.
+
+https://github.com/agherzan/meta-raspberrypi/pull/1574
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ recipes-kernel/linux/linux-raspberrypi.inc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 diff --git a/recipes-kernel/linux/linux-raspberrypi.inc b/recipes-kernel/linux/linux-raspberrypi.inc
-index 036ff22..67d67aa 100644
+index 036ff220c..67d67aa85 100644
 --- a/recipes-kernel/linux/linux-raspberrypi.inc
 +++ b/recipes-kernel/linux/linux-raspberrypi.inc
 @@ -44,5 +44,5 @@ KERNEL_MODULE_AUTOLOAD += "${@bb.utils.contains("MACHINE_FEATURES", "pitft28r",
