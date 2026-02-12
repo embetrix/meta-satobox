@@ -1,12 +1,15 @@
+inherit kernel-modsign uboot-config
+
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+SRC_URI += "file://kmod-sign.cfg"
+
 # On Raspberry Pi the firmware loads from the boot partition 
 # the DTB produced by the kernel build ! 
 # So the DTB U-Boot receives is the kernel-generated DTB one not a U-Boot DTB !
 # That’s why we inject the FIT public keys into those kernel DTBs in the deploy step 
 # so that U-Boot can verify the FIT image signature correctly:
 # https://docs.u-boot.org/en/latest/board/broadcom/raspberrypi.html
-
-inherit uboot-config
-
 do_deploy:append() {
 
     if [ "${UBOOT_SIGN_ENABLE}" != "1" ]; then
