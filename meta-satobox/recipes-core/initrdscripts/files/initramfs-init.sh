@@ -1,5 +1,16 @@
 #!/bin/sh
 
+# Early initramfs init script:
+# - Mounts pseudo filesystems
+# - Parses kernel cmdline for root device
+# - Optionally grows the last partition
+# - Detects NVMe format it and use it as "bitcoin" ext4 partition
+# - Sets up IMA/EVM keys and loads IMA policy
+# - Mounts the real rootfs and switches to /sbin/init
+#
+# SPDX-License-Identifier: MIT
+# Copyright 2026 Embetrix Embedded Systems Solutions <ayoub.zaki@embetrix.com>
+
 export PATH=$PATH:/sbin:/usr/sbin
 
 ROOT_MNT="/tmp/rootfs"
