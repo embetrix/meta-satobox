@@ -8,11 +8,16 @@ DATA_MNT="/var/data"
 BITCOIN_MNT="/var/bitcoin"
 WALLETS_MNT="/var/wallets"
 BACKUPS_MNT="/var/backups"
+
 ROOT_DEV=""
 NVME_DEV=""
 BITCOIN_DEV=""
+
 OPT_ROOT="ro,noatime"
 OPT_PART="noexec,nodev,nosuid,noatime"
+
+IMA_POLICY="/etc/ima/ima-policy"
+IMA_EVM_X509="/etc/ima-evm.der"
 
 TIMEOUT=40
 
@@ -25,7 +30,7 @@ mount_pseudo_fs() {
 	mount -t tmpfs tmp /tmp
 	mount -t proc proc /proc
 	mount -t sysfs sysfs /sys
-
+	mount -t securityfs -o $OPT_PART securityfs /sys/kernel/security
 	# this is needed to make pipe work in shell
 	ln -s /proc/self/fd /dev/fd
 }
@@ -63,6 +68,36 @@ wait_for_dev() {
 	fi
 }
 
+setup_ima_evm() {
+    # Import IMA/EVM X509
+    if [ ! -f "$IMA_EVM_X509" ] ; then
+        error_exit "IMA/EVM X509 certificate not found!"
+    fi
+
+    ima_id=$(keyctl newring _ima @u)
+    evmctl import "$IMA_EVM_X509" $ima_id
+
+    evm_id=$(keyctl newring _evm @u)
+    evmctl import "$IMA_EVM_X509" $evm_id
+
+    # Load IMA policy
+    if [ ! -f "$IMA_POLICY" ]; then
+        error_exit "IMA policy not found!"
+    fi
+
+	# Get root filesystem UUID
+	FSUUID=$(blkid $ROOT_DEV -s UUID -o value)
+	if [ -z "$FSUUID" ]; then
+		error_exit "cannot get filesystem UUID for $ROOT_DEV"
+	fi
+
+    # Replace placeholder in IMA policy before loading it
+	sed "s|__FSUUID__|$FSUUID|g" "$IMA_POLICY" > /sys/kernel/security/integrity/ima/policy \
+		|| error_exit "cannot load IMA policy"
+
+    # Enable EVM in signature verification mode only
+    echo "0x80000002" > /sys/kernel/security/integrity/evm/evm
+}
 
 echo "Starting Initramfs..."
 mount_pseudo_fs
@@ -116,7 +151,6 @@ grow_last_partition() {
 		fi
 	fi
 }
-
 
 setup_nvme() {
 
@@ -197,6 +231,9 @@ setup_nvme
 if [ -z "$NVME_DEV" ]; then
 	grow_last_partition
 fi
+
+# Setup IMA/EVM
+setup_ima_evm
 
 # Mount root filesystem
 mkdir -p $ROOT_MNT
