@@ -8,7 +8,8 @@ RDEPENDS:${PN}:append = "busybox util-linux-mount \
                          util-linux-blkid util-linux-lsblk \
                          e2fsprogs-mke2fs e2fsprogs-resize2fs \
                          parted gptfdisk keyutils \
-                         ima-policy-appraise-custom"
+                         ima-policy-appraise-custom \
+                         ima-evm-keys"
 
 S = "${WORKDIR}"
 
@@ -16,11 +17,6 @@ do_install() {
     install -m 0755 ${WORKDIR}/initramfs-init.sh ${D}/init
     install -d ${D}/dev
     mknod -m 622 ${D}/dev/console c 5 1
-
-    install -d ${D}${sysconfdir}
-    if [ -f "${IMA_EVM_X509}" ]; then
-        install -m 0644 ${IMA_EVM_X509} ${D}${sysconfdir}/ima-evm.der
-    fi
 }
 
-FILES:${PN} += "/dev /init ${sysconfdir}"
+FILES:${PN} += "/dev /init"

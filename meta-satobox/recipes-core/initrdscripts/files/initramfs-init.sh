@@ -28,7 +28,8 @@ OPT_ROOT="ro,noatime"
 OPT_PART="noexec,nodev,nosuid,noatime"
 
 IMA_POLICY="/etc/ima/ima-policy"
-IMA_EVM_X509="/etc/ima-evm.der"
+IMA_X509="/etc/keys/x509_ima.der"
+EVM_X509="/etc/keys/x509_evm.der"
 
 TIMEOUT=40
 
@@ -81,15 +82,15 @@ wait_for_dev() {
 
 setup_ima_evm() {
     # Import IMA/EVM X509
-    if [ ! -f "$IMA_EVM_X509" ] ; then
-        error_exit "IMA/EVM X509 certificate not found!"
+    if [ ! -f "$IMA_X509" ] && [ ! -f "$EVM_X509" ]; then
+        error_exit "IMA/EVM X509 certificates not found!"
     fi
 
     ima_id=$(keyctl newring _ima @u)
-    evmctl import "$IMA_EVM_X509" $ima_id
+    evmctl import "$IMA_X509" $ima_id
 
     evm_id=$(keyctl newring _evm @u)
-    evmctl import "$IMA_EVM_X509" $evm_id
+    evmctl import "$EVM_X509" $evm_id
 
     # Load IMA policy
     if [ ! -f "$IMA_POLICY" ]; then
