@@ -3,6 +3,22 @@
 # It creates a standalone bootable FAT32 partition image containing
 # bootloader files, kernel, device trees, and overlays.
 # When secure boot is enabled, it also generates a signature file boot.sig along side with boot.img
+#
+# Usage:
+#   To enable secure boot signing, set in your machine, distro, or local config:
+#     RPI_SECBOOT_SIGN = "1"
+#     RPI_SECBOOT_SIGN_KEY = "/path/to/keys/secure-boot-sign.key"
+#
+#   The signing key must be an RSA 2048-bit
+#
+#   To deploy boot.img/boot.sig to the boot partition via wic add:
+#     IMAGE_BOOT_FILES:append = " boot.img boot.sig"
+#   This is backward compatible if secure boot is not enabled, the system
+#   will still boot from files in the FAT partition.
+#
+#   For strict secure boot (boot only from signed boot.img), use:
+#     IMAGE_BOOT_FILES = "boot.img boot.sig"
+#
 inherit image_types
 
 # Enable signing of boot.img in deploy directory.
