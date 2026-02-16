@@ -20,7 +20,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install oelint-adv
-        run: pip install oelint-adv
+        run: pip install oelint-adv==9.3.3
 
       - name: Run OE Linter
         run: oelint-adv meta-satobox
