@@ -1,0 +1,98 @@
+From d61bcc4e6d66d576b808495fb5bfb5c0647954eb Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Mon, 16 Feb 2026 17:09:55 +0100
+Subject: [PATCH] security: Replace memset with memory_cleanse for sensitive
+ data clearing
+
+memset calls used to clear sensitive cryptographic material can be
+optimized away by the compiler as "dead stores" when the buffer is not
+used afterward (e.g., before return or in destructors).
+
+Replace with memory_cleanse() which uses memory barriers to prevent
+this optimization, ensuring secrets are actually cleared from memory.
+
+Affected locations:
+- key.cpp: Secret key buffer after failed ec_seckey_import_der validation
+- aes.cpp: AES-256 key schedules and IVs in destructors
+
+This prevents potential key material leakage in memory after use.
+
+https://github.com/bitcoin/bitcoin/pull/34600
+
+Signed-off-by: Ayoub Zaki <ayoub.zaki@embetrix.com>
+---
+ src/crypto/aes.cpp | 10 ++++++----
+ src/key.cpp        |  3 ++-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/src/crypto/aes.cpp b/src/crypto/aes.cpp
+index 40df5690e0..e63880caf9 100644
+--- a/src/crypto/aes.cpp
++++ b/src/crypto/aes.cpp
+@@ -4,6 +4,8 @@
+ 
+ #include <crypto/aes.h>
+ 
++#include <support/cleanse.h>
++
+ #include <cstring>
+ 
+ extern "C" {
+@@ -17,7 +19,7 @@ AES256Encrypt::AES256Encrypt(const unsigned char key[32])
+ 
+ AES256Encrypt::~AES256Encrypt()
+ {
+-    memset(&ctx, 0, sizeof(ctx));
++    memory_cleanse(&ctx, sizeof(ctx));
+ }
+ 
+ void AES256Encrypt::Encrypt(unsigned char ciphertext[16], const unsigned char plaintext[16]) const
+@@ -32,7 +34,7 @@ AES256Decrypt::AES256Decrypt(const unsigned char key[32])
+ 
+ AES256Decrypt::~AES256Decrypt()
+ {
+-    memset(&ctx, 0, sizeof(ctx));
++    memory_cleanse(&ctx, sizeof(ctx));
+ }
+ 
+ void AES256Decrypt::Decrypt(unsigned char plaintext[16], const unsigned char ciphertext[16]) const
+@@ -131,7 +133,7 @@ int AES256CBCEncrypt::Encrypt(const unsigned char* data, int size, unsigned char
+ 
+ AES256CBCEncrypt::~AES256CBCEncrypt()
+ {
+-    memset(iv, 0, sizeof(iv));
++    memory_cleanse(iv, sizeof(iv));
+ }
+ 
+ AES256CBCDecrypt::AES256CBCDecrypt(const unsigned char key[AES256_KEYSIZE], const unsigned char ivIn[AES_BLOCKSIZE], bool padIn)
+@@ -148,5 +150,5 @@ int AES256CBCDecrypt::Decrypt(const unsigned char* data, int size, unsigned char
+ 
+ AES256CBCDecrypt::~AES256CBCDecrypt()
+ {
+-    memset(iv, 0, sizeof(iv));
++    memory_cleanse(iv, sizeof(iv));
+ }
+diff --git a/src/key.cpp b/src/key.cpp
+index f17a286750..7ba927c79a 100644
+--- a/src/key.cpp
++++ b/src/key.cpp
+@@ -9,6 +9,7 @@
+ #include <crypto/hmac_sha512.h>
+ #include <hash.h>
+ #include <random.h>
++#include <support/cleanse.h>
+ 
+ #include <secp256k1.h>
+ #include <secp256k1_ellswift.h>
+@@ -77,7 +78,7 @@ int ec_seckey_import_der(const secp256k1_context* ctx, unsigned char *out32, con
+     }
+     memcpy(out32 + (32 - oslen), seckey, oslen);
+     if (!secp256k1_ec_seckey_verify(ctx, out32)) {
+-        memset(out32, 0, 32);
++        memory_cleanse(out32, 32);
+         return 0;
+     }
+     return 1;
+-- 
+2.43.0
+

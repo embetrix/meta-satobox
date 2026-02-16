@@ -5,6 +5,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=502a9495576ff2bb756c7a6abf0b85c0"
 
 SRC_URI = "git://github.com/bitcoin/bitcoin.git;branch=30.x;protocol=https \
            file://0001-bitcoind-disable-noisy-UpdateTipLog-logs.patch \
+           file://0002-security-Replace-memset-with-memory_cleanse-for-sens.patch \
            file://bitcoind.service.in \
            file://bitcoin.conf \
            file://bitcoin-tmp.conf \
