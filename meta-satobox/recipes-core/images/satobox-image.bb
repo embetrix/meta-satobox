@@ -34,5 +34,3 @@ DEV_TOOLS = "\
 
 IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${DEV_TOOLS}", d)}"
 
-# Set the default rootfs type squashfs read-only for mainnet, ext4 otherswise
-ROOTFS_TYPE =  "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', 'squashfs', "ext4", d)}"
