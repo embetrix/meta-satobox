@@ -3,7 +3,6 @@
 # Early initramfs init script:
 # - Mounts pseudo filesystems
 # - Parses kernel cmdline for root device
-# - Optionally grows the last partition
 # - Detects NVMe format it and use it as "bitcoin" ext4 partition
 # - Sets up IMA/EVM keys and loads IMA policy
 # - Mounts the real rootfs and switches to /sbin/init
@@ -81,21 +80,21 @@ wait_for_dev() {
 }
 
 setup_ima_evm() {
-    # Import IMA/EVM X509
-    if [ ! -f "$IMA_X509" ] && [ ! -f "$EVM_X509" ]; then
-        error_exit "IMA/EVM X509 certificates not found!"
-    fi
+	# Import IMA/EVM X509
+	if [ ! -f "$IMA_X509" ] && [ ! -f "$EVM_X509" ]; then
+		error_exit "IMA/EVM X509 certificates not found!"
+	fi
 
-    ima_id=$(keyctl newring _ima @u)
-    evmctl import "$IMA_X509" $ima_id
+	ima_id=$(keyctl newring _ima @u)
+	evmctl import "$IMA_X509" $ima_id
 
-    evm_id=$(keyctl newring _evm @u)
-    evmctl import "$EVM_X509" $evm_id
+	evm_id=$(keyctl newring _evm @u)
+	evmctl import "$EVM_X509" $evm_id
 
-    # Load IMA policy
-    if [ ! -f "$IMA_POLICY" ]; then
-        error_exit "IMA policy not found!"
-    fi
+	# Load IMA policy
+	if [ ! -f "$IMA_POLICY" ]; then
+		error_exit "IMA policy not found!"
+	fi
 
 	# Get root filesystem UUID
 	FSUUID=$(blkid $ROOT_DEV -s UUID -o value)
@@ -103,12 +102,12 @@ setup_ima_evm() {
 		error_exit "cannot get filesystem UUID for $ROOT_DEV"
 	fi
 
-    # Replace placeholder in IMA policy before loading it
+	# Replace placeholder in IMA policy before loading it
 	sed "s|__FSUUID__|$FSUUID|g" "$IMA_POLICY" > /sys/kernel/security/integrity/ima/policy \
 		|| error_exit "cannot load IMA policy"
 
-    # Enable EVM in signature verification mode only
-    echo "0x80000002" > /sys/kernel/security/integrity/evm/evm
+	# Enable EVM in signature verification mode only
+	echo "0x80000002" > /sys/kernel/security/integrity/evm/evm
 }
 
 echo "Starting Initramfs..."
@@ -122,47 +121,6 @@ if [ "$ROOT_DEV" == "" ] || [ "$ROOT_DEV" == "/dev/nfs" ]; then
 fi
 
 wait_for_dev $ROOT_DEV
-
-grow_last_partition() {
-	# Uses: DEVICE, PART_NBR, PART, LABEL, SECTORS
-	# Resizes the last partition to fill free space and grows the ext filesystem.
-	echo "Checking if partition $PART can be extended..."
-	DEVICE_SECTORS=$(blockdev --getsz $DEVICE)
-	DEVICE_END=$((DEVICE_SECTORS - 1))
-
-	# Get partition end sector from sgdisk partition table
-	LAST_PART_END=$(sgdisk -p $DEVICE | grep "^ *$PART_NBR " | awk '{print int($3)}')
-
-	if [ -n "$LAST_PART_END" ] && [ $LAST_PART_END -lt $DEVICE_END ]; then
-		echo "Partition sectors: $SECTORS"
-		echo "Last partition end: $LAST_PART_END"
-		echo "Device end: $DEVICE_END"
-		echo "Partition has free space available. Resizing partition $PART to maximum..."
-		sgdisk -d $PART_NBR -n $PART_NBR:0:0 -c $PART_NBR:$LABEL $DEVICE
-		partprobe $DEVICE
-
-		# Wait and force kernel to re-read partition table
-		sleep 1
-		blockdev --rereadpt $DEVICE 2>/dev/null || true
-		sleep 1
-
-		# Get new partition size after resize
-		NEW_SECTORS=$(blockdev --getsz $PART)
-		echo "Partition size after resize: $NEW_SECTORS sectors (was $SECTORS)"
-
-		# Only proceed with filesystem resize if partition actually grew
-		if [ $NEW_SECTORS -gt $SECTORS ]; then
-			echo "Resizing filesystem..."
-			resize2fs $PART
-			echo "Filesystem resize completed successfully."
-			sleep 2
-			echo "Rebooting system to apply changes..."
-			reboot -f
-		else
-			echo "Partition size did not change, no resize needed."
-		fi
-	fi
-}
 
 setup_nvme() {
 
@@ -200,49 +158,8 @@ setup_nvme() {
 	BITCOIN_DEV="$NVME_PART"
 }
 
-# Handle both mmcblkXpY and sdaY naming schemes
-if echo "$ROOT_DEV" | grep -q 'p[0-9]$'; then
-	# mmcblk or nvme device (has 'p' separator)
-	DEVICE=${ROOT_DEV%p*}
-else
-	# Regular disk device like sda, sdb (no 'p' separator)
-	DEVICE=${ROOT_DEV%[0-9]*}
-fi
-
-# Find the last partition number on the device
-PART_NBR=$(sgdisk -p $DEVICE | grep "^ *[0-9]" | awk '{print $1}' | tail -1)
-
-if [ -z "$PART_NBR" ]; then
-	error_exit "Could not determine last partition number on $DEVICE"
-fi
-
-# Reconstruct PART with correct separator
-case "$DEVICE" in
-	*mmcblk*|*nvme*)
-		PART="$DEVICE"p"$PART_NBR"
-		;;
-	*)
-		PART="$DEVICE""$PART_NBR"
-		;;
-esac
-
-echo "Found last partition: $PART (partition $PART_NBR on $DEVICE)"
-
-LABEL=$(blkid -s PARTLABEL -o value $PART)
-SECTORS=$(blockdev --getsz $PART)
-
-if [ -z "$DEVICE" ] || [ -z "$PART" ] || [ -z "$PART_NBR" ]; then
-	error_exit "Failed to identify partition details!"
-fi
-
-
 # If an NVMe disk is present, use it for the bitcoin volume
 setup_nvme
-
-# Only auto-grow the SD card partition layout when no NVMe disk is present.
-if [ -z "$NVME_DEV" ]; then
-	grow_last_partition
-fi
 
 # Setup IMA/EVM
 setup_ima_evm
@@ -252,7 +169,7 @@ mkdir -p $ROOT_MNT
 mount -o $OPT_ROOT $ROOT_DEV $ROOT_MNT   || error_exit "cannot mount root filesystem"
 
 # Mount data volume
-mount -o $OPT_PART -L data     $ROOT_MNT$DATA_MNT     || error_exit "cannot mount $DATA_MNT"
+mount -o $OPT_PART -L data $ROOT_MNT$DATA_MNT || error_exit "cannot mount $DATA_MNT"
 if [ -n "$BITCOIN_DEV" ]; then
 	mount -o $OPT_PART "$BITCOIN_DEV" $ROOT_MNT$BITCOIN_MNT  || error_exit "cannot mount $BITCOIN_MNT from $BITCOIN_DEV"
 else
