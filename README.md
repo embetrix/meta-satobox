@@ -73,7 +73,7 @@ For Raspberry Pi deployments, use a Raspberry Pi 5 with an [M.2 HAT](https://www
 
 ## Flash SD Card
 
-Flash image on a SD Card (at least 32GB) using [bmap-tools](https://github.com/yoctoproject/bmaptool):
+Flash image on a SD Card (at least 64GB) using [bmap-tools](https://github.com/yoctoproject/bmaptool):
 
 If you are not building from scratch, you can download the prebuilt image artifacts from [GitHub Releases](https://github.com/embetrix/satobox/releases) and flash those instead.
 
