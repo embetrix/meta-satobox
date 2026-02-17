@@ -9,6 +9,7 @@ else
     setenv kpart 2
     setenv rpart 4
 fi
+saveenv
 setenv bootargs "${bootargs} root=/dev/mmcblk0p${rpart}"
 fatload @@BOOT_MEDIA@@ 0:${kpart} ${kernel_addr_r} @@KERNEL_IMAGETYPE@@
 @@KERNEL_BOOTCMD@@ ${kernel_addr_r} - ${fdt_addr}

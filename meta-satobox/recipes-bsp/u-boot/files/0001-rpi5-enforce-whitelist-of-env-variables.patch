@@ -1,0 +1,31 @@
+From ca51e70d5a44d69bd6220d2472b47f90dca75b65 Mon Sep 17 00:00:00 2001
+From: Ayoub Zaki <ayoub.zaki@embetrix.com>
+Date: Tue, 17 Feb 2026 11:03:31 +0100
+Subject: [PATCH] rpi: enforce whitelist of env variables
+
+---
+ include/configs/rpi.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/include/configs/rpi.h b/include/configs/rpi.h
+index 8e56bdc84a8..379233771f2 100644
+--- a/include/configs/rpi.h
++++ b/include/configs/rpi.h
+@@ -31,4 +31,14 @@
+  */
+ #define CFG_SYS_SDRAM_SIZE		SZ_128M
+ 
++#define CFG_EXTRA_ENV_SETTINGS \
++    "bootcount=0\0" \
++    "active_system=0\0" \
++    "upgrade_available=0\0" \
++    ".flags=bootcount:dw,active_system:dw,upgrade_available:dw\0"
++
++#ifdef CONFIG_ENV_WRITEABLE_LIST
++#define CONFIG_ENV_FLAGS_LIST_STATIC "bootcount:dw,active_system:dw,upgrade_available:dw"
++#endif
++
+ #endif
+-- 
+2.34.1
+
