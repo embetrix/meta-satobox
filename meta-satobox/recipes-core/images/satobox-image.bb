@@ -18,6 +18,8 @@ IMAGE_INSTALL:append= "\
     python3-cryptoadvance-specter \
     bitcoin \
     electrs \
+    ultrafastsecp256k1 \
+    ultrafastsecp256k1-examples \
     "
 
 DEV_TOOLS = "\
