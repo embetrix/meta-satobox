@@ -18,8 +18,6 @@ IMAGE_INSTALL:append= "\
     python3-cryptoadvance-specter \
     bitcoin \
     electrs \
-    ultrafastsecp256k1 \
-    ultrafastsecp256k1-examples \
     "
 
 DEV_TOOLS = "\
@@ -32,6 +30,8 @@ DEV_TOOLS = "\
     iperf3 \
     sqlite3 \
     systemd-analyze \
+    libsecp256k1-examples \
+    ultrafastsecp256k1-examples \   
 	"
 
 IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${DEV_TOOLS}", d)}"
