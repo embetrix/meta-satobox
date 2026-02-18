@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          clean: 0
           ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
