@@ -26,11 +26,14 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Build Testnet/Mainnet Images
+      - name: Build Mainnet Image
         run: |
-          KAS_MACHINE=${{ env.MACHINE }} kas-container build kas-satobox.yml
           KAS_MACHINE=${{ env.MACHINE }} kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
 
+      - name: Build Testnet Image
+        run: |
+          KAS_MACHINE=${{ env.MACHINE }} kas-container build kas-satobox.yml
+                   
       - name: Upload Release Assets
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
