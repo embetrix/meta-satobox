@@ -21,24 +21,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: 0
+          clean: ${{ startsWith(github.ref, 'refs/tags/') }}
           ref: ${{ github.ref }}
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Build Testnet/Mainnet Images
+      - name: Layers Update
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          KAS_MACHINE=${{ env.MACHINE }} kas-container checkout --update kas-satobox.yml
+
+      - name: Build Testnet Image
         run: |
           KAS_MACHINE=${{ env.MACHINE }} kas-container build kas-satobox.yml
+
+      - name: Prepare Testnet Artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p build/release-assets
+          cp build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-signet-${{ env.MACHINE }}_*.manifest build/release-assets/
+          cp build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-signet-${{ env.MACHINE }}_*.wic.*  build/release-assets/
+
+      - name: Build Mainnet Image
+        run: |
           KAS_MACHINE=${{ env.MACHINE }} kas-container --runtime-args "-e BTC_CHAIN=mainnet" build kas-satobox.yml
+
+      - name: Prepare Mainnet Artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cp build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-mainnet-${{ env.MACHINE }}_*.manifest build/release-assets/
+          cp build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-mainnet-${{ env.MACHINE }}_*.wic.*  build/release-assets/
 
       - name: Upload Release Assets
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-signet-${{ env.MACHINE }}_*.manifest
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-mainnet-${{ env.MACHINE }}_*.manifest
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-signet-${{ env.MACHINE }}_*.wic.bz2
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-mainnet-${{ env.MACHINE }}_*.wic.bz2
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-signet-${{ env.MACHINE }}_*.wic.bmap
-            build/tmp/deploy/images/${{ env.MACHINE }}/satobox-image-mainnet-${{ env.MACHINE }}_*.wic.bmap
+            build/release-assets/*
