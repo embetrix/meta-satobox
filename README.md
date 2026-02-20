@@ -30,10 +30,11 @@ Most existing Bitcoin node solutions (e.g., Umbrel, RaspiBlitz) rely on general-
 - Firewall enabled by default
 - USBGuard to restrict unauthorized USB devices
 - Hardened compiler and linker security flags
-- Read-only root filesystem
+- Secure Boot enabled on supported platforms (e.g. Raspberry Pi 5)
+- Read-only and authenticated root filesystem
 - No SSH or login on mainnet images
 
-Additional security mechanisms may be introduced in the future (e.g. secure/measured boot, secure storage, file system encryption) if there is community interest or real-world demand.
+Additional security mechanisms may be introduced in the future (e.g. secure storage, file system encryption)
 
 ## Build
 
