@@ -4,8 +4,8 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=127e18a604ef7b91787b82648ee4c4a1"
 
 SRC_URI = "git://github.com/shrec/UltrafastSecp256k1.git;branch=main;protocol=https"
 
-#v3.5.0
-SRCREV = "d2f4ffa716286af41ea4a9062abb780319faf1d8"
+#v3.9.0
+SRCREV = "f650ccd3df1348f118b5dabb1b1d8c0837297fdf"
 S = "${WORKDIR}/git"
 
 inherit cmake pkgconfig
