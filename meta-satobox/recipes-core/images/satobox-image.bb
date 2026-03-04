@@ -1,6 +1,6 @@
 DESCRIPTION = "Satobox Image"
 
-inherit core-image passwd
+inherit core-image passwd ima-evm-rootfs
 
 # for mainnet configuration remove debug tools, ssh and package management
 EXTRA_IMAGE_FEATURES:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', ' debug-tweaks', d)}"
@@ -20,7 +20,7 @@ IMAGE_INSTALL:append= "\
     electrs \
     "
 
-DEV_TOOLS = "\
+IMAGE_INSTALL_EXTRA = "\
 	packagegroup-core-full-cmdline \
     htop \
     tcpdump \
@@ -34,5 +34,5 @@ DEV_TOOLS = "\
     ultrafastsecp256k1-examples \   
 	"
 
-IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${DEV_TOOLS}", d)}"
+IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'mainnet', '', " ${IMAGE_INSTALL_EXTRA}", d)}"
 
