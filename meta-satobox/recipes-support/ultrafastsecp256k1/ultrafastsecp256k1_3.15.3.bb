@@ -1,11 +1,11 @@
 DESCRIPTION = "Ultra high-performance secp256k1 ECC library"
-LICENSE = "AGPL-3.0-only"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=127e18a604ef7b91787b82648ee4c4a1"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=ac0d51f8d23d04ebe5cfd38b52618ce9"
 
 SRC_URI = "git://github.com/shrec/UltrafastSecp256k1.git;branch=main;protocol=https"
 
-#v3.9.0
-SRCREV = "f650ccd3df1348f118b5dabb1b1d8c0837297fdf"
+#v3.15.3
+SRCREV = "8cfcc471ff72522add72164b511b7476a9be632b"
 S = "${WORKDIR}/git"
 
 inherit cmake pkgconfig
