@@ -15,6 +15,9 @@ RuntimeDirectory=electrs
 RuntimeDirectoryMode=0700
 Restart=on-failure
 RestartSec=30
+#CPUQuota=150%
+#MemoryHigh=1500M
+#MemoryMax=1750M
 
 [Install]
 WantedBy=multi-user.target

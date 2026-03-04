@@ -7,8 +7,8 @@ SRC_URI = "git://github.com/romanz/electrs.git;protocol=https;branch=master \
            file://electrs.service.in \
            file://config.toml \
            "
-# Tag 0.10.10
-SRCREV = "1d9c4b8bb6fef23b128961fd6cdb291c52025010"
+# Tag 0.11.1
+SRCREV = "35216c6d30148be8e6763d913d437330f431fc03"
 S = "${WORKDIR}/git"
 
 TOOLCHAIN = "clang"
