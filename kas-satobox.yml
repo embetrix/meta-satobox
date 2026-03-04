@@ -42,10 +42,14 @@ repos:
       eeprom-enable-native-build:
         repo: meta-satobox
         path: patches/0002-rpi-eeprom-enable-native-build.patch
-  meta-lts-mixins:
+  meta-lts-mixins-rust:
+    url: "https://git.yoctoproject.org/meta-lts-mixins"
+    branch: scarthgap/rust
+    path: "layers/meta-lts-mixins-rust"
+  meta-lts-mixins-u-boot:
     url: "https://git.yoctoproject.org/meta-lts-mixins"
     branch: scarthgap/u-boot
-    path: "layers/meta-lts-mixins"
+    path: "layers/meta-lts-mixins-u-boot"
   meta-clang:
     url: "https://github.com/kraj/meta-clang.git"
     branch: scarthgap
