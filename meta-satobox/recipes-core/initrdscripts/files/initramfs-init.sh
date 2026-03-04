@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: MIT
+# Copyright 2026 Embetrix Embedded Systems Solutions <ayoub.zaki@embetrix.com>
 
 # Early initramfs init script:
 # - Mounts pseudo filesystems
@@ -7,8 +9,6 @@
 # - Sets up IMA/EVM keys and loads IMA policy
 # - Mounts the real rootfs and switches to /sbin/init
 #
-# SPDX-License-Identifier: MIT
-# Copyright 2026 Embetrix Embedded Systems Solutions <ayoub.zaki@embetrix.com>
 
 export PATH=$PATH:/sbin:/usr/sbin
 
