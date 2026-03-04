@@ -1,3 +1,15 @@
+PACKAGECONFIG:remove = " \
+    backlight \
+    hibernate \
+    localed \
+    machined \
+    nss-mymachines \
+    quotacheck \
+    sysvinit \
+    timedated \
+    utmp \
+    vconsole \
+"
 
 PACKAGECONFIG:append = " cryptsetup cryptsetup-plugins"
 
