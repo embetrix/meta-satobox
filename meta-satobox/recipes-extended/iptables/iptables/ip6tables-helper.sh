@@ -13,6 +13,10 @@ ip6tables -P FORWARD DROP
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A OUTPUT -o lo -j ACCEPT
 
+# Drop invalid packets early
+ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
+ip6tables -A OUTPUT -m conntrack --ctstate INVALID -j DROP
+
 # Allow established and related connections
 ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -24,11 +28,22 @@ ip6tables -A INPUT -p tcp --dport 22 \
          -m limit --limit 3/min --limit-burst 5 \
          -j ACCEPT
 
-# Allow inbound HTTP (TCP port 80)
-ip6tables -A INPUT -p tcp --dport 80 -j ACCEPT
+# Allow inbound HTTPS (TCP port 443) from local IPv6 scopes only
+ip6tables -A INPUT -p tcp -s fc00::/7 --dport 443 \
+         -m connlimit --connlimit-above 30 \
+         -j DROP
+ip6tables -A INPUT -p tcp -s fe80::/10 --dport 443 \
+         -m connlimit --connlimit-above 30 \
+         -j DROP
 
-# Allow inbound HTTPS (TCP port 443)
-ip6tables -A INPUT -p tcp --dport 443 -j ACCEPT
+ip6tables -A INPUT -p tcp -s fc00::/7 --dport 443 \
+         -m conntrack --ctstate NEW \
+         -m limit --limit 25/min --limit-burst 50 \
+         -j ACCEPT
+ip6tables -A INPUT -p tcp -s fe80::/10 --dport 443 \
+         -m conntrack --ctstate NEW \
+         -m limit --limit 25/min --limit-burst 50 \
+         -j ACCEPT
 
 # Allow inbound ping (ICMPv6 echo-request) with rate limiting:
 ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request \
@@ -38,12 +53,6 @@ ip6tables -A INPUT -p ipv6-icmp --icmpv6-type echo-request \
 # --- Outbound Rules ---
 # Allow outbound ping (ICMPv6 echo-request)  <-- this was missing
 ip6tables -A OUTPUT -p ipv6-icmp --icmpv6-type echo-request -j ACCEPT
-
-# Allow outbound SSH (TCP port 22)
-ip6tables -A OUTPUT -p tcp --dport 22 -j ACCEPT
-
-# Allow outbound HTTP (TCP port 80)
-ip6tables -A OUTPUT -p tcp --dport 80 -j ACCEPT
 
 # Allow outbound HTTPS (TCP port 443)
 ip6tables -A OUTPUT -p tcp --dport 443 -j ACCEPT

@@ -15,6 +15,10 @@ iptables -P FORWARD DROP
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
+# Drop invalid packets early
+iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+iptables -A OUTPUT -m conntrack --ctstate INVALID -j DROP
+
 # Allow established and related connections
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -26,11 +30,29 @@ iptables -A INPUT -p tcp --dport 22 \
          -m limit --limit 3/min --limit-burst 5 \
          -j ACCEPT
 
-# Allow inbound HTTP (TCP port 80)
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+# Allow inbound HTTPS (TCP port 443) from private IPv4 networks only
+iptables -A INPUT -p tcp -s 10.0.0.0/8 --dport 443 \
+         -m connlimit --connlimit-above 30 \
+         -j DROP
+iptables -A INPUT -p tcp -s 172.16.0.0/12 --dport 443 \
+         -m connlimit --connlimit-above 30 \
+         -j DROP
+iptables -A INPUT -p tcp -s 192.168.0.0/16 --dport 443 \
+         -m connlimit --connlimit-above 30 \
+         -j DROP
 
-# Allow inbound HTTPS (TCP port 443)
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp -s 10.0.0.0/8 --dport 443 \
+         -m conntrack --ctstate NEW \
+         -m limit --limit 25/min --limit-burst 50 \
+         -j ACCEPT
+iptables -A INPUT -p tcp -s 172.16.0.0/12 --dport 443 \
+         -m conntrack --ctstate NEW \
+         -m limit --limit 25/min --limit-burst 50 \
+         -j ACCEPT
+iptables -A INPUT -p tcp -s 192.168.0.0/16 --dport 443 \
+         -m conntrack --ctstate NEW \
+         -m limit --limit 25/min --limit-burst 50 \
+         -j ACCEPT
 
 # Allow inbound ping (ICMP echo-request) with rate limiting:
 iptables -A INPUT -p icmp --icmp-type echo-request \
@@ -41,12 +63,6 @@ iptables -A INPUT -p icmp --icmp-type echo-request \
 iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 # --- Outbound Rules ---
-# Allow outbound SSH (TCP port 22)
-iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
-
-# Allow outbound HTTP (TCP port 80)
-iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
-
 # Allow outbound HTTPS (TCP port 443)
 iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
 
