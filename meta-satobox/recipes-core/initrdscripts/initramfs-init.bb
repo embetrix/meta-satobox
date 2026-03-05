@@ -4,10 +4,14 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 SRC_URI = "file://initramfs-init.sh"
 
-RDEPENDS:${PN}:append = "busybox util-linux-mount \
-                         util-linux-blkid util-linux-lsblk \
-                         e2fsprogs-mke2fs e2fsprogs-resize2fs \
-                         parted gptfdisk keyutils \
+RDEPENDS:${PN}:append = "busybox \
+                         util-linux-mount \
+                         util-linux-blkid \
+                         util-linux-lsblk \
+                         e2fsprogs-mke2fs\
+                         e2fsprogs-resize2fs \
+                         parted gptfdisk \
+                         keyutils \
                          ima-policy-appraise-custom \
                          ima-evm-keys"
 

@@ -177,7 +177,7 @@ else
 fi
 mount -o $OPT_PART -L wallets  $ROOT_MNT$WALLETS_MNT  || error_exit "cannot mount $WALLETS_MNT"
 mount -o $OPT_PART -L backups  $ROOT_MNT$BACKUPS_MNT  || error_exit "cannot mount $BACKUPS_MNT"
-mount -L boot  $ROOT_MNT$BOOT_MNT  || error_exit "cannot mount $BOOT_MNT"
+mount -o $OPT_PART -L boot     $ROOT_MNT$BOOT_MNT     || error_exit "cannot mount $BOOT_MNT"
 
 # Switch to real root
 echo "Switch to real root..."
