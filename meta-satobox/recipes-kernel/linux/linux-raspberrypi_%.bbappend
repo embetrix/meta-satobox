@@ -5,6 +5,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += "file://dm-crypt-verity.cfg \
             file://ima-evm.cfg \
             file://kmod-sign.cfg \
+            file://netfilter.cfg \
             file://security-harden.cfg \
             "
 
