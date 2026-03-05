@@ -2,18 +2,9 @@ inherit kernel-modsign uboot-config
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-
 SRC_URI += "file://dm-crypt-verity.cfg \
             file://ima-evm.cfg \
             file://kmod-sign.cfg \
-            file://no-bluetooth.cfg \
-            file://no-debug.cfg \
-            file://no-efi.cfg \
-            file://no-fs.cfg \
-            file://no-kexec.cfg \
-            file://no-multimedia.cfg \
-            file://no-sound.cfg \
-            file://no-virt.cfg  \
             file://security-harden.cfg \
             "
 
