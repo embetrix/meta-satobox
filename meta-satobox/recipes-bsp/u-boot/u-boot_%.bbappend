@@ -6,9 +6,8 @@ SRC_URI += "file://0001-rpi5-enforce-whitelist-of-env-variables.patch \
            "
 
 SRC_URI += "file://fitimage.cfg \
-            file://harden.cfg \
             file://bootcount.cfg \
             file://environments.cfg \
+            file://security-harden.cfg \
            "
-
 inherit uboot-sign
