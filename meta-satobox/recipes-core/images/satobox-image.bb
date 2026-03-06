@@ -18,6 +18,7 @@ IMAGE_INSTALL:append= "\
     python3-cryptoadvance-specter \
     bitcoin \
     electrs \
+    lnd \
     "
 
 IMAGE_INSTALL_EXTRA = "\

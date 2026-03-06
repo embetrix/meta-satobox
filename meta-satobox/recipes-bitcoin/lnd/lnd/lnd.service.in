@@ -9,7 +9,6 @@ User=lnd
 Group=lnd
 SupplementaryGroups=bitcoin
 StateDirectory=lnd
-ExecStartPre=+/bin/sh -c 'mkdir -p /var/lnd && chown lnd:lnd /var/lnd && chmod 0750 /var/lnd'
 BindPaths=/var/lnd:/var/lib/lnd
 ReadWritePaths=/var/lnd
 ExecStart=@bindir@/lnd --configfile=/etc/lnd/lnd.conf
