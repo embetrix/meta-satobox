@@ -46,6 +46,10 @@ repos:
     url: "https://git.yoctoproject.org/meta-lts-mixins"
     branch: scarthgap/rust
     path: "layers/meta-lts-mixins-rust"
+  meta-lts-mixins-go:
+    url: "https://git.yoctoproject.org/meta-lts-mixins"
+    branch: scarthgap/go
+    path: "layers/meta-lts-mixins-go"
   meta-lts-mixins-u-boot:
     url: "https://git.yoctoproject.org/meta-lts-mixins"
     branch: scarthgap/u-boot
