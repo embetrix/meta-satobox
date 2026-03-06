@@ -1,0 +1,29 @@
+name: OE Linter
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ "scarthgap" ]
+  pull_request:
+    branches: [ "scarthgap" ]
+
+jobs:
+  oelint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install oelint-adv
+        run: pip install oelint-adv==9.3.3
+
+      - name: Run OE Linter
+        run: oelint-adv meta-satobox

@@ -1,4 +1,5 @@
 [![CI](https://github.com/embetrix/satobox/actions/workflows/ci.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/ci.yml)
+[![OE Linter](https://github.com/embetrix/satobox/actions/workflows/oelint.yml/badge.svg)](https://github.com/embetrix/satobox/actions/workflows/oelint.yml)
 
 
 ## Overview
